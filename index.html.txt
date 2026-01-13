@@ -2,40 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>BreatheFree</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="./CSS/style.css" />
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#22c55e" />
 </head>
+
 <body>
 
-  <header>
-    <h1>BreatheFree</h1>
-    <p id="dateTime"></p>
-  </header>
+<header>
+  <h1>BreatheFree</h1>
+  <p id="dateTime"></p>
+</header>
 
-  <main>
-    <button id="smokeBtn">I Smoked 🚬</button>
+<main>
+
+  <section class="card">
+    <h2>🔥 Streak</h2>
+    <p id="streak">0 days</p>
+  </section>
+
+  <section class="card">
+    <h2>🚭 Today</h2>
+    <p id="limit"></p>
     <p id="count"></p>
-  </main>
+  </section>
 
-  <!-- JS FILES (ORDER MATTERS) -->
-  <script src="./js/storage.js"></script>
-  <script src="./js/program.js"></script>
-  <script src="./js/ai.js"></script>
-  <script src="./js/notifications.js"></script>
-  <script src="./js/pro.js"></script>
-  <script src="./js/app.js"></script>
+  <section class="actions">
+    <button id="smokeBtn" class="danger">I Smoked 🚬</button>
+    <button id="craveBtn" class="primary">Craving 😣</button>
+  </section>
 
-  <!-- SERVICE WORKER -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js');
-    }
-  </script>
+  <section id="timerSection" class="hidden card">
+    <h3>⏱ Stay Strong</h3>
+    <p id="timer">05:00</p>
+    <button id="stopTimer" class="success">Passed the craving ✅</button>
+  </section>
+
+  <section class="card">
+    <h2>🤖 AI Reflection</h2>
+    <p id="aiText"></p>
+  </section>
+
+  <section class="card">
+    <h2>📈 30-Day Journey</h2>
+    <div id="timeline"></div>
+  </section>
+
+</main>
+
+<script src="./js/storage.js"></script>
+<script src="./js/app.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js');
+  }
+</script>
 
 </body>
 </html>
