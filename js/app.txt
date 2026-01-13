@@ -1,14 +1,22 @@
-const data = loadData();
-const today = todayKey();
+// ---------- STATE ----------
+const today = new Date().toISOString().slice(0, 10);
+
+let data = JSON.parse(localStorage.getItem("breathefree")) || {
+  startDate: today,
+  streak: 0,
+  days: {}
+};
 
 if (!data.days[today]) {
   data.days[today] = { smoked: 0, passed: 0 };
 }
 
+// ---------- ELEMENTS ----------
 const streakEl = document.getElementById("streak");
 const smokedEl = document.getElementById("smoked");
 const limitEl = document.getElementById("limit");
 const aiText = document.getElementById("aiText");
+const graphEl = document.getElementById("progressGraph");
 
 const smokeBtn = document.getElementById("smokeBtn");
 const craveBtn = document.getElementById("craveBtn");
@@ -16,13 +24,19 @@ const passBtn = document.getElementById("passBtn");
 const timerBox = document.getElementById("timerBox");
 const timerEl = document.getElementById("timer");
 
+// ---------- LOGIC ----------
+const dayIndex =
+  Math.floor((new Date() - new Date(data.startDate)) / 86400000) + 1;
+
+const limit = Math.max(0, 15 - Math.floor(dayIndex / 2));
+
 let timer = null;
 let remaining = 300;
 
-const dayCount =
-  Math.floor((new Date() - new Date(data.startDate)) / 86400000) + 1;
-
-const limit = Math.max(0, 15 - Math.floor(dayCount / 2));
+// ---------- FUNCTIONS ----------
+function save() {
+  localStorage.setItem("breathefree", JSON.stringify(data));
+}
 
 function updateUI() {
   streakEl.textContent = data.streak;
@@ -31,23 +45,34 @@ function updateUI() {
 
   aiText.textContent =
     data.days[today].passed > 0
-      ? `You successfully avoided ${data.days[today].passed} cravings today. Your willpower is growing.`
-      : `Cravings peak for a few minutes. Breathe, wait, and let it pass.`;
+      ? `You avoided ${data.days[today].passed} cravings today. That’s real progress.`
+      : `Every craving you delay weakens the habit loop.`;
 
-  renderTimeline();
+  renderGraph();
 }
 
-smokeBtn.onclick = () => {
+function renderGraph() {
+  graphEl.innerHTML = "";
+  for (let i = 0; i < limit; i++) {
+    const bar = document.createElement("div");
+    bar.className =
+      "bar " + (i < data.days[today].smoked ? "filled" : "");
+    graphEl.appendChild(bar);
+  }
+}
+
+// ---------- EVENTS ----------
+smokeBtn.addEventListener("click", () => {
   data.days[today].smoked++;
   data.streak = 0;
-  saveData(data);
+  save();
   updateUI();
-};
+});
 
-craveBtn.onclick = () => {
+craveBtn.addEventListener("click", () => {
   if (timer) return;
-  remaining = 300;
   timerBox.classList.remove("hidden");
+  remaining = 300;
   updateTimer();
 
   timer = setInterval(() => {
@@ -55,18 +80,17 @@ craveBtn.onclick = () => {
     updateTimer();
     if (remaining <= 0) finishCraving();
   }, 1000);
-};
+});
 
-passBtn.onclick = finishCraving;
+passBtn.addEventListener("click", finishCraving);
 
 function finishCraving() {
   clearInterval(timer);
   timer = null;
   timerBox.classList.add("hidden");
-
   data.days[today].passed++;
   data.streak++;
-  saveData(data);
+  save();
   updateUI();
 }
 
@@ -76,15 +100,5 @@ function updateTimer() {
   timerEl.textContent = `${m}:${s}`;
 }
 
-function renderTimeline() {
-  const t = document.getElementById("timeline");
-  t.innerHTML = "";
-  for (let i = 1; i <= 30; i++) {
-    const d = document.createElement("div");
-    d.className = "day " + (i <= dayCount ? "" : "locked");
-    d.textContent = i;
-    t.appendChild(d);
-  }
-}
-
+// ---------- INIT ----------
 updateUI();

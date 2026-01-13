@@ -1,120 +1,104 @@
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(180deg, #020617, #020617 40%, #022c22);
-  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background: linear-gradient(180deg, #ecfeff, #f0fdf4);
+  color: #064e3b;
 }
 
 .app {
   max-width: 420px;
   margin: auto;
-  padding: 16px;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 20px;
+  padding: 20px;
 }
 
 h1 {
-  margin: 0;
-  font-size: 28px;
+  text-align: center;
 }
 
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.stat-card {
-  background: #020617;
+.stat {
+  background: white;
   border-radius: 16px;
   padding: 12px;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
-.stat-card strong {
-  display: block;
+.stat strong {
   font-size: 22px;
-  margin-top: 4px;
-}
-
-.card {
-  background: #020617;
-  border-radius: 18px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  display: block;
 }
 
 .buttons {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .btn {
   flex: 1;
   padding: 16px;
-  font-size: 16px;
   border-radius: 16px;
   border: none;
-  cursor: pointer;
+  font-size: 16px;
   font-weight: 600;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  cursor: pointer;
 }
 
-.btn:active {
-  transform: scale(0.95);
+.smoke {
+  background: #fecaca;
+  color: #7f1d1d;
 }
 
-.primary {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-  color: #022c22;
+.crave {
+  background: #bfdbfe;
+  color: #1e3a8a;
 }
 
-.danger {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: white;
+.pass {
+  background: #bbf7d0;
+  color: #065f46;
+  width: 100%;
 }
 
-.success {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #022c22;
-}
-
-#timer {
-  font-size: 36px;
-  text-align: center;
-  margin: 12px 0;
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 .hidden {
   display: none;
 }
 
-#timeline {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 6px;
-}
-
-.day {
-  background: #334155;
-  border-radius: 8px;
-  font-size: 11px;
-  padding: 6px 0;
+#timer {
+  font-size: 32px;
   text-align: center;
+  margin: 10px 0;
 }
 
-.day.done {
-  background: #22c55e;
-  color: #022c22;
+/* Simple progress graph */
+#progressGraph {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.bar {
+  flex: 1;
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 6px;
+}
+
+.bar.filled {
+  background: #34d399;
 }

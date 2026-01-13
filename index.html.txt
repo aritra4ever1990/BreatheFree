@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>BreatheFree</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="./CSS/style.css?v=5" />
+  <link rel="stylesheet" href="./css/style.css?v=6">
 </head>
 
 <body>
   <div class="app">
 
-    <h1 class="title">BreatheFree</h1>
+    <h1>BreatheFree</h1>
 
     <div class="stats">
       <div class="stat">
@@ -31,9 +31,30 @@
       </div>
     </div>
 
-    <div class="actions">
+    <div class="buttons">
       <button id="smokeBtn" class="btn smoke">I Smoked 🚬</button>
       <button id="craveBtn" class="btn crave">Craving 😣</button>
     </div>
 
-    <d
+    <div id="timerBox" class="card hidden">
+      <h2>Craving Timer</h2>
+      <div id="timer">05:00</div>
+      <button id="passBtn" class="btn pass">I Passed the Craving ✅</button>
+    </div>
+
+    <div class="card">
+      <h2>📊 Today’s Progress</h2>
+      <div id="progressGraph"></div>
+    </div>
+
+    <div class="card">
+      <h2>🤖 AI Reflection</h2>
+      <p id="aiText"></p>
+    </div>
+
+  </div>
+
+  <!-- IMPORTANT: script at END of body -->
+  <script src="./js/app.js"></script>
+</body>
+</html>
