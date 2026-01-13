@@ -12,33 +12,42 @@
 
 <body>
 
-<header>
-  <h1>BreatheFree</h1>
-  <p id="dateTime"></p>
-</header>
+<div class="app">
 
-<main>
+  <header>
+    <h1>BreatheFree</h1>
+    <p id="dateTime"></p>
+  </header>
 
-  <section class="card">
-    <h2>🔥 Streak</h2>
-    <p id="streak">0 days</p>
+  <section class="stats">
+    <div class="stat-card">
+      <span>🔥 Streak</span>
+      <strong id="streak">0</strong>
+      <small>days</small>
+    </div>
+
+    <div class="stat-card">
+      <span>🚭 Smoked</span>
+      <strong id="count">0</strong>
+      <small>today</small>
+    </div>
+
+    <div class="stat-card">
+      <span>🎯 Limit</span>
+      <strong id="limit">0</strong>
+      <small>today</small>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>🚭 Today</h2>
-    <p id="limit"></p>
-    <p id="count"></p>
+  <section class="buttons">
+    <button id="smokeBtn" class="btn danger">I Smoked 🚬</button>
+    <button id="craveBtn" class="btn primary">Craving 😣</button>
   </section>
 
-  <section class="actions">
-    <button id="smokeBtn" class="danger">I Smoked 🚬</button>
-    <button id="craveBtn" class="primary">Craving 😣</button>
-  </section>
-
-  <section id="timerSection" class="hidden card">
-    <h3>⏱ Stay Strong</h3>
+  <section id="timerBox" class="card hidden">
+    <h2>⏱ Craving Timer</h2>
     <p id="timer">05:00</p>
-    <button id="stopTimer" class="success">Passed the craving ✅</button>
+    <button id="passBtn" class="btn success">I Passed the Craving ✅</button>
   </section>
 
   <section class="card">
@@ -47,20 +56,14 @@
   </section>
 
   <section class="card">
-    <h2>📈 30-Day Journey</h2>
+    <h2>📈 Your 30-Day Journey</h2>
     <div id="timeline"></div>
   </section>
 
-</main>
+</div>
 
 <script src="./js/storage.js"></script>
 <script src="./js/app.js"></script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js');
-  }
-</script>
 
 </body>
 </html>

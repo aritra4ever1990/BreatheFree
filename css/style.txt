@@ -1,73 +1,103 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(180deg, #020617, #0f172a);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(180deg, #020617, #020617 40%, #022c22);
   color: #e5e7eb;
-  text-align: center;
+}
+
+.app {
+  max-width: 420px;
+  margin: auto;
+  padding: 16px;
 }
 
 header {
-  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 h1 {
-  margin-bottom: 4px;
+  margin: 0;
+  font-size: 28px;
 }
 
-main {
-  padding: 16px;
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: #020617;
+  border-radius: 16px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.stat-card strong {
+  display: block;
+  font-size: 22px;
+  margin-top: 4px;
 }
 
 .card {
   background: #020617;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 16px;
   margin-bottom: 16px;
-  animation: fadeUp 0.4s ease;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
 }
 
-.actions {
+.buttons {
   display: flex;
   gap: 12px;
-  justify-content: center;
   margin-bottom: 16px;
 }
 
-button {
-  padding: 16px 20px;
+.btn {
+  flex: 1;
+  padding: 16px;
   font-size: 16px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: none;
   cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.1s ease;
+  font-weight: 600;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-button:active {
+.btn:active {
   transform: scale(0.95);
 }
 
 .primary {
-  background: #38bdf8;
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
   color: #022c22;
 }
 
 .danger {
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
   color: white;
 }
 
 .success {
-  background: #22c55e;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #022c22;
-}
-
-.hidden {
-  display: none;
 }
 
 #timer {
   font-size: 36px;
-  font-weight: bold;
+  text-align: center;
+  margin: 12px 0;
+}
+
+.hidden {
+  display: none;
 }
 
 #timeline {
@@ -77,24 +107,14 @@ button:active {
 }
 
 .day {
-  padding: 8px 0;
-  border-radius: 8px;
-  font-size: 12px;
   background: #334155;
+  border-radius: 8px;
+  font-size: 11px;
+  padding: 6px 0;
+  text-align: center;
 }
 
 .day.done {
   background: #22c55e;
   color: #022c22;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
