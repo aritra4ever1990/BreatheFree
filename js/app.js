@@ -1,50 +1,44 @@
 const data = loadData();
-const todayKey = today();
+const today = todayKey();
 
-if (!data.history[todayKey]) {
-  data.history[todayKey] = {
-    smoked: 0,
-    cravingsPassed: 0
-  };
+if (!data.days[today]) {
+  data.days[today] = { smoked: 0, passed: 0 };
 }
 
-const startDate = new Date(data.startDate);
-const now = new Date();
-const dayNumber = Math.max(1, Math.floor((now - startDate) / 86400000) + 1);
-const dailyLimit = Math.max(0, 15 - Math.floor(dayNumber / 2));
+const streakEl = document.getElementById("streak");
+const smokedEl = document.getElementById("smoked");
+const limitEl = document.getElementById("limit");
+const aiText = document.getElementById("aiText");
 
-// Elements
-const streakEl = document.getElementById('streak');
-const countEl = document.getElementById('count');
-const limitEl = document.getElementById('limit');
-const dateEl = document.getElementById('dateTime');
-const aiText = document.getElementById('aiText');
-
-const smokeBtn = document.getElementById('smokeBtn');
-const craveBtn = document.getElementById('craveBtn');
-const timerBox = document.getElementById('timerBox');
-const timerEl = document.getElementById('timer');
-const passBtn = document.getElementById('passBtn');
+const smokeBtn = document.getElementById("smokeBtn");
+const craveBtn = document.getElementById("craveBtn");
+const passBtn = document.getElementById("passBtn");
+const timerBox = document.getElementById("timerBox");
+const timerEl = document.getElementById("timer");
 
 let timer = null;
 let remaining = 300;
 
+const dayCount =
+  Math.floor((new Date() - new Date(data.startDate)) / 86400000) + 1;
+
+const limit = Math.max(0, 15 - Math.floor(dayCount / 2));
+
 function updateUI() {
   streakEl.textContent = data.streak;
-  countEl.textContent = data.history[todayKey].smoked;
-  limitEl.textContent = dailyLimit;
-  dateEl.textContent = new Date().toLocaleString();
+  smokedEl.textContent = data.days[today].smoked;
+  limitEl.textContent = limit;
 
   aiText.textContent =
-    data.history[todayKey].cravingsPassed > 0
-      ? `You resisted ${data.history[todayKey].cravingsPassed} cravings today. Your brain is rewiring itself.`
-      : `Every craving lasts a few minutes. You are stronger than it.`;
+    data.days[today].passed > 0
+      ? `You successfully avoided ${data.days[today].passed} cravings today. Your willpower is growing.`
+      : `Cravings peak for a few minutes. Breathe, wait, and let it pass.`;
 
   renderTimeline();
 }
 
 smokeBtn.onclick = () => {
-  data.history[todayKey].smoked++;
+  data.days[today].smoked++;
   data.streak = 0;
   saveData(data);
   updateUI();
@@ -52,9 +46,8 @@ smokeBtn.onclick = () => {
 
 craveBtn.onclick = () => {
   if (timer) return;
-
-  timerBox.classList.remove('hidden');
   remaining = 300;
+  timerBox.classList.remove("hidden");
   updateTimer();
 
   timer = setInterval(() => {
@@ -69,28 +62,28 @@ passBtn.onclick = finishCraving;
 function finishCraving() {
   clearInterval(timer);
   timer = null;
-  timerBox.classList.add('hidden');
+  timerBox.classList.add("hidden");
 
-  data.history[todayKey].cravingsPassed++;
+  data.days[today].passed++;
   data.streak++;
   saveData(data);
   updateUI();
 }
 
 function updateTimer() {
-  const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-  const s = String(remaining % 60).padStart(2, '0');
+  const m = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const s = String(remaining % 60).padStart(2, "0");
   timerEl.textContent = `${m}:${s}`;
 }
 
 function renderTimeline() {
-  const el = document.getElementById('timeline');
-  el.innerHTML = '';
+  const t = document.getElementById("timeline");
+  t.innerHTML = "";
   for (let i = 1; i <= 30; i++) {
-    const d = document.createElement('div');
-    d.className = 'day' + (i <= dayNumber ? ' done' : '');
+    const d = document.createElement("div");
+    d.className = "day " + (i <= dayCount ? "" : "locked");
     d.textContent = i;
-    el.appendChild(d);
+    t.appendChild(d);
   }
 }
 

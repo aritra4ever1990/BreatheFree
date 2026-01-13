@@ -1,17 +1,17 @@
-const STORAGE_KEY = 'breathefree-v3';
+const KEY = "breathefree-data";
 
-function today() {
+function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
 
 function loadData() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-    startDate: today(),
+  return JSON.parse(localStorage.getItem(KEY)) || {
+    startDate: todayKey(),
     streak: 0,
-    history: {}
+    days: {}
   };
 }
 
 function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  localStorage.setItem(KEY, JSON.stringify(data));
 }

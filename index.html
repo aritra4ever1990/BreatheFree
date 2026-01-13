@@ -5,65 +5,35 @@
   <title>BreatheFree</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="./CSS/style.css?v=3" />
-  <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#22c55e" />
+  <link rel="stylesheet" href="./CSS/style.css?v=5" />
 </head>
 
 <body>
+  <div class="app">
 
-<div class="app">
+    <h1 class="title">BreatheFree</h1>
 
-  <header>
-    <h1>BreatheFree</h1>
-    <p id="dateTime"></p>
-  </header>
-
-  <section class="stats">
-    <div class="stat-card">
-      <span>🔥 Streak</span>
-      <strong id="streak">0</strong>
-      <small>days</small>
+    <div class="stats">
+      <div class="stat">
+        <span>🔥 Streak</span>
+        <strong id="streak">0</strong>
+        <small>days</small>
+      </div>
+      <div class="stat">
+        <span>🚭 Smoked</span>
+        <strong id="smoked">0</strong>
+        <small>today</small>
+      </div>
+      <div class="stat">
+        <span>🎯 Limit</span>
+        <strong id="limit">15</strong>
+        <small>today</small>
+      </div>
     </div>
 
-    <div class="stat-card">
-      <span>🚭 Smoked</span>
-      <strong id="count">0</strong>
-      <small>today</small>
+    <div class="actions">
+      <button id="smokeBtn" class="btn smoke">I Smoked 🚬</button>
+      <button id="craveBtn" class="btn crave">Craving 😣</button>
     </div>
 
-    <div class="stat-card">
-      <span>🎯 Limit</span>
-      <strong id="limit">0</strong>
-      <small>today</small>
-    </div>
-  </section>
-
-  <section class="buttons">
-    <button id="smokeBtn" class="btn danger">I Smoked 🚬</button>
-    <button id="craveBtn" class="btn primary">Craving 😣</button>
-  </section>
-
-  <section id="timerBox" class="card hidden">
-    <h2>⏱ Craving Timer</h2>
-    <p id="timer">05:00</p>
-    <button id="passBtn" class="btn success">I Passed the Craving ✅</button>
-  </section>
-
-  <section class="card">
-    <h2>🤖 AI Reflection</h2>
-    <p id="aiText"></p>
-  </section>
-
-  <section class="card">
-    <h2>📈 Your 30-Day Journey</h2>
-    <div id="timeline"></div>
-  </section>
-
-</div>
-
-<script src="./js/storage.js"></script>
-<script src="./js/app.js"></script>
-
-</body>
-</html>
+    <d
