@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BreatheFree</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="./css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
@@ -13,15 +13,46 @@
 
     <h1>BreatheFree</h1>
 
+    <!-- STATS -->
     <div class="stats">
-      <div class="stat">
-        <span>🔥 Streak</span>
-        <strong id="streak">0</strong>
+      <div class="card">
+        🔥 <div class="num" id="streak">0</div>
         <small>days</small>
       </div>
-      <div class="stat">
-        <span>🚭 Smoked</span>
-        <strong id="smoked">0</strong>
+
+      <div class="card">
+        🚭 <div class="num" id="smoked">0</div>
         <small>today</small>
       </div>
-      <div class="stat">
+
+      <div class="card">
+        🎯 <div class="num" id="limit">5</div>
+        <small>limit</small>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="buttons">
+      <button id="smokeBtn" class="btn smoke">I Smoked 🚬</button>
+      <button id="craveBtn" class="btn crave">Craving 😣</button>
+    </div>
+
+    <!-- AI REFLECTION -->
+    <div class="section">
+      <h2>🤖 AI Reflection</h2>
+      <p id="reflection">Stay strong. One craving at a time.</p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="section">
+      <h2>📈 Progress</h2>
+      <canvas id="progressChart"></canvas>
+    </div>
+
+  </div>
+
+  <!-- JS FILES -->
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
