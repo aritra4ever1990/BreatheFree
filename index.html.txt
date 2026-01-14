@@ -2,71 +2,206 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BreatheFree</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BreatheFree – Quit Smoking</title>
 
-  <link rel="stylesheet" href="./css/style.css">
+  <!-- App Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🫁</text></svg>">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/style.css" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ---------- Inline polish & animations ---------- */
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #fffde7);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .banner {
+      background: linear-gradient(90deg, #00c8c8, #00e5ff);
+      color: white;
+      padding: 14px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+
+    .actions {
+      display: flex;
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 18px;
+      font-size: 20px;
+      border-radius: 18px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.15);
+    }
+
+    .smoke { background: linear-gradient(135deg, #ff5252, #ff1744); color: #fff; }
+    .craving { background: linear-gradient(135deg, #ffb300, #ff8f00); color: #fff; }
+    .stop { background: linear-gradient(135deg, #9e9e9e, #616161); color: #fff; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+      background: white;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.1);
+      animation: pop 0.4s ease;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.96); }
+      to { transform: scale(1); }
+    }
+
+    .card h1 {
+      font-size: 34px;
+      margin: 0;
+    }
+
+    .message, .ai-box, .danger-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #ffffffcc;
+      font-weight: 600;
+    }
+
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .heat-cell {
+      height: 30px;
+      border-radius: 6px;
+      background: #00c8c8;
+      color: white;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      margin-top: 20px;
+      background: white;
+      border-radius: 20px;
+      padding: 10px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
+
 <body>
 
-  <!-- TOP BANNER -->
-  <div class="top-banner">
-    🌿 <strong>BreatheFree</strong>
-    <span id="clock"></span>
+  <!-- 🔷 Top Animated Banner -->
+  <div class="banner">
+    🫁 BreatheFree • <span id="currentTime"></span>
   </div>
 
-  <!-- DASHBOARD -->
-  <div class="dashboard">
-    <div class="card gradient-orange">
-      <h1 id="streak">0</h1>
-      <p>🔥 Streak (days)</p>
+  <main style="padding: 16px; max-width: 520px; margin: auto;">
+
+    <!-- 🔘 Action Buttons -->
+    <div class="actions">
+      <button id="smokeBtn" class="btn smoke" onclick="addSmoke()">🚬 I Smoked</button>
+      <button id="craveBtn" class="btn craving" onclick="startCraving()">😖 Craving</button>
     </div>
 
-    <div class="card gradient-red">
-      <h1 id="smoked">0</h1>
-      <p>🚭 Smoked Today</p>
+    <div class="actions">
+      <button id="stopCraveBtn" class="btn stop" onclick="stopCraving()">⏹ Stop Craving</button>
     </div>
 
-    <div class="card gradient-green">
-      <h1 id="wallet">₹0</h1>
-      <p>💰 Wallet</p>
+    <!-- 📊 Stats Cards -->
+    <div class="cards">
+      <div class="card">
+        <h1 id="smokedToday">0</h1>
+        <p>🚫 Smoked Today</p>
+      </div>
+
+      <div class="card">
+        <h1 id="wallet">₹0</h1>
+        <p>💰 Wallet</p>
+      </div>
+
+      <div class="card">
+        <h1 id="awards">₹0</h1>
+        <p>🏆 Awards</p>
+      </div>
+
+      <div class="card">
+        <h1 id="streak">0</h1>
+        <p>🔥 Streak</p>
+      </div>
     </div>
 
-    <div class="card gradient-purple">
-      <h1 id="awards">₹0</h1>
-      <p>🏆 Awards</p>
+    <!-- 🧠 Messages -->
+    <div id="message" class="message"></div>
+    <div id="aiInsight" class="ai-box"></div>
+    <div id="dangerHours" class="danger-box"></div>
+
+    <!-- 📊 Chart -->
+    <div class="actions">
+      <button class="btn" onclick="toggleChart('hourly')">⏱ Hourly</button>
+      <button class="btn" onclick="toggleChart('daily')">📅 Daily</button>
     </div>
-  </div>
 
-  <!-- ACTION BUTTONS -->
-  <div class="actions">
-    <button id="smokeBtn" class="btn action-btn">🚬 I Smoked</button>
-    <button id="craveBtn" class="btn action-btn">😣 Craving</button>
-    <button id="stopCraveBtn" class="btn action-btn" disabled>⏹ Stop Craving</button>
-  </div>
+    <canvas id="progressChart" height="160"></canvas>
 
-  <!-- STATUS MESSAGE -->
-  <div class="status" id="statusText">Stay strong 💪</div>
+    <!-- 🌡️ Heatmap -->
+    <h3>🌡️ Hourly Heatmap</h3>
+    <div id="heatmap" class="heatmap"></div>
 
-  <!-- PROGRESS TRACKER -->
-  <section>
-    <h2>📈 Progress Tracker</h2>
-    <canvas id="progressChart"></canvas>
-  </section>
+    <!-- 📁 Export -->
+    <div class="actions">
+      <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
 
-  <!-- SPEND ANALYSIS -->
-  <section>
-    <h2>💸 Spend Analysis</h2>
-    <p>Total Cigarettes: <strong><span id="totalCigs">0</span></strong></p>
-    <p>Money Spent: ₹<strong><span id="moneySpent">0</span></strong></p>
-    <p>Money Saved: ₹<strong><span id="moneySaved">0</span></strong></p>
-  </section>
+  </main>
 
-  <!-- CSV EXPORT -->
-  <button class="export" id="exportCSV">⬇ Export CSV</button>
+  <!-- ⏱ Live Time -->
+  <script>
+    setInterval(() => {
+      document.getElementById("currentTime").innerText =
+        new Date().toLocaleString();
+    }, 1000);
+  </script>
 
-  <script src="./js/app.js"></script>
+  <!-- App Logic -->
+  <script src="app.js"></script>
 
 </body>
 </html>
