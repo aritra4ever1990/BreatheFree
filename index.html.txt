@@ -2,52 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BreatheFree</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="stylesheet" href="style.css" />
+  <title>BreatheFree</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#e8f7f1" />
+  <link rel="icon" href="./favicon.svg" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./css/style.css" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
-  <h1>BreatheFree</h1>
+  <header class="app-header">
+    <h1>BreatheFree</h1>
+    <p id="currentDate"></p>
+  </header>
 
-  <div class="cards">
-    <div class="card">🔥 Streak<br><span id="streak">0</span></div>
-    <div class="card">🚭 Smoked<br><span id="smoked">0</span></div>
-    <div class="card">💰 Wallet<br>₹<span id="wallet">0</span></div>
-    <div class="card">🏆 Awards<br>₹<span id="awards">0</span></div>
-  </div>
+  <!-- Stats -->
+  <section class="stats">
+    <div class="card">
+      <span>🔥 Streak</span>
+      <strong id="streakCount">0</strong>
+      <small>days</small>
+    </div>
 
-  <div class="buttons">
-    <button id="smokeBtn" class="danger">I Smoked 🚬</button>
-    <button id="craveBtn" class="calm">Craving 😖</button>
-  </div>
+    <div class="card">
+      <span>🚭 Smoked</span>
+      <strong id="smokedToday">0</strong>
+      <small>today</small>
+    </div>
 
-  <div id="timerBox" class="hidden">
-    ⏳ <span id="timer"></span>
-  </div>
+    <div class="card">
+      <span>💰 Wallet</span>
+      <strong id="walletAmount">₹0</strong>
+    </div>
 
-  <div id="aiQuote" class="hidden ai-quote"></div>
+    <div class="card">
+      <span>🏆 Awards</span>
+      <strong id="awardAmount">₹0</strong>
+    </div>
+  </section>
 
-  <section>
-    <h2>📈 Progress</h2>
+  <!-- Actions -->
+  <section class="actions">
+    <button id="smokeBtn" class="btn danger">I Smoked 🚬</button>
+    <button id="cravingBtn" class="btn calm">Craving 😣</button>
+  </section>
+
+  <!-- Craving Timer -->
+  <section id="cravingSection" class="hidden">
+    <p id="cravingTimer">⏳ Craving ends in 05:00</p>
+  </section>
+
+  <!-- AI Reflection -->
+  <section class="card big">
+    <h3>🤖 AI Reflection</h3>
+    <p id="aiMessage">You’re taking control. Keep going 💪</p>
+  </section>
+
+  <!-- Progress -->
+  <section class="card big">
+    <h3>📈 Progress</h3>
     <canvas id="progressChart"></canvas>
   </section>
 
-  <section>
-    <h2>💸 Spend Analysis</h2>
+  <!-- Spend Analysis -->
+  <section class="card big">
+    <h3>💸 Spend Analysis</h3>
     <canvas id="spendChart"></canvas>
   </section>
 
-  <section>
-    <h2>🕒 Hourly Heatmap</h2>
-    <div id="heatmap" class="heatmap"></div>
-  </section>
+  <!-- Install PWA -->
+  <button id="installBtn" class="btn install hidden">
+    📲 Install App
+  </button>
 
-  <script src="app.js"></script>
+  <!-- Scripts (ORDER IS IMPORTANT) -->
+  <script src="./js/storage.js"></script>
+  <script src="./js/ai.js"></script>
+  <script src="./js/program.js"></script>
+  <script src="./js/app.js"></script>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js');
+    }
+
+    // Current Date
+    document.getElementById("currentDate").innerText =
+      new Date().toLocaleString();
+  </script>
+
 </body>
 </html>
