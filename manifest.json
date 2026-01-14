@@ -3,6 +3,13 @@
   "short_name": "BreatheFree",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#eafff6",
-  "theme_color": "#38bdf8"
+  "background_color": "#ecfeff",
+  "theme_color": "#14b8a6",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
 }

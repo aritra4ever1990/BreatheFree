@@ -1,173 +1,136 @@
-/* ================= SAFE DATA LOAD ================= */
-let raw = loadData();
+const STORAGE = "breathefree-data";
+const CRAVING_KEY = "cravingEndTime";
 
-/* 🔐 Auto-heal missing fields */
-let data = {
-  smoked: raw.smoked ?? 0,
-  streak: raw.streak ?? 0,
-  wallet: raw.wallet ?? 0,
-  awards: raw.awards ?? 0,
-  cravingPasses: raw.cravingPasses ?? 0,
-  price: raw.price ?? 0,
-  dailyLimit: raw.dailyLimit ?? 15,
-  logs: Array.isArray(raw.logs) ? raw.logs : []
+const defaultData = {
+  smokedToday: 0,
+  streak: 0,
+  wallet: 0,
+  awards: 0,
+  price: 10,
+  cravingPasses: 0,
+  logs: []
 };
 
-saveData(data); // persist healed data
+let data = JSON.parse(localStorage.getItem(STORAGE)) || defaultData;
 
-/* ================= DOM ================= */
-const smokedEl = document.getElementById("smoked");
-const streakEl = document.getElementById("streak");
-const walletEl = document.getElementById("wallet");
-const awardsEl = document.getElementById("awards");
-
-const progressCtx = document.getElementById("progressChart");
-const spendCtx = document.getElementById("spendChart");
-
-let progressChart, spendChart;
-let cravingTimer = null;
-let seconds = 300;
-
-/* ================= UI ================= */
-function syncUI() {
-  smokedEl.textContent = data.smoked;
-  streakEl.textContent = data.streak;
-  walletEl.textContent = "₹" + data.wallet;
-  awardsEl.textContent = "₹" + data.awards;
+function save() {
+  localStorage.setItem(STORAGE, JSON.stringify(data));
 }
 
-syncUI();
+function syncUI() {
+  streak.textContent = data.streak;
+  smoked.textContent = data.smokedToday;
+  wallet.textContent = data.wallet;
+  awards.textContent = data.awards;
+}
 
-/* ================= SMOKE ================= */
-document.getElementById("smokeBtn").addEventListener("click", () => {
-  if (data.smoked >= data.dailyLimit) {
-    alert("Daily limit reached");
-    return;
-  }
+const quotes = {
+  smoke: [
+    "A slip doesn’t erase progress. Awareness matters.",
+    "Notice the trigger — that’s growth already.",
+    "Be patient with yourself. Change is hard."
+  ],
+  craving: [
+    "You stayed present — the urge passed.",
+    "That was discipline in action.",
+    "Each resisted craving builds strength."
+  ]
+};
 
-  if (!data.price || data.price <= 0) {
-    data.price = Number(prompt("Price of one cigarette ₹"));
-    if (!data.price) return;
-  }
+function showQuote(type) {
+  aiQuote.textContent = quotes[type][Math.floor(Math.random()*quotes[type].length)];
+  aiQuote.classList.remove("hidden");
+  setTimeout(() => aiQuote.classList.add("hidden"), 5000);
+}
 
-  data.smoked++;
+smokeBtn.onclick = () => {
+  data.smokedToday++;
   data.wallet -= data.price;
-
-  data.logs.push({
-    type: "smoke",
-    time: new Date().toISOString(),
-    price: data.price
-  });
-
-  saveData(data);
+  data.logs.push({ type: "smoke", time: new Date().toISOString(), price: data.price });
+  showQuote("smoke");
+  save();
   syncUI();
   updateCharts();
   renderHeatmap();
-});
+};
 
-/* ================= CRAVING ================= */
-document.getElementById("craveBtn").addEventListener("click", () => {
-  if (cravingTimer) return;
+craveBtn.onclick = () => {
+  if (localStorage.getItem(CRAVING_KEY)) return;
+  const end = Date.now() + 5*60*1000;
+  localStorage.setItem(CRAVING_KEY, end);
+  startCravingTimer();
+};
 
-  const timerBox = document.getElementById("timerBox");
-  const timerText = document.getElementById("timer");
-
+function startCravingTimer() {
   timerBox.classList.remove("hidden");
-  seconds = 300;
 
-  cravingTimer = setInterval(() => {
-    seconds--;
-    timerText.textContent =
-      `0${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  const interval = setInterval(() => {
+    const end = Number(localStorage.getItem(CRAVING_KEY));
+    const remain = Math.floor((end - Date.now()) / 1000);
 
-    if (seconds <= 0) {
-      clearInterval(cravingTimer);
-      cravingTimer = null;
+    if (remain <= 0) {
+      clearInterval(interval);
+      localStorage.removeItem(CRAVING_KEY);
       timerBox.classList.add("hidden");
 
       data.cravingPasses++;
       data.awards += data.price;
 
-      if (data.cravingPasses % 5 === 0) {
-        data.streak++;
-      }
+      if (data.cravingPasses % 5 === 0) data.streak++;
 
-      data.logs.push({
-        type: "craving",
-        time: new Date().toISOString()
-      });
-
-      alert("🎉 Craving passed! Reward added.");
-
-      saveData(data);
+      data.logs.push({ type: "craving", time: new Date().toISOString(), price: data.price });
+      showQuote("craving");
+      save();
       syncUI();
       updateCharts();
       renderHeatmap();
+      return;
     }
-  }, 1000);
-});
 
-/* ================= CHARTS ================= */
+    timer.textContent = `Craving ends in ${Math.floor(remain/60)}:${String(remain%60).padStart(2,"0")}`;
+  }, 1000);
+}
+
+if (localStorage.getItem(CRAVING_KEY)) startCravingTimer();
+
+let progressChart, spendChart;
+
 function updateCharts() {
-  const smokeByDay = {};
-  const spendByDay = {};
+  const days = {};
+  const spend = {};
 
   data.logs.forEach(l => {
-    if (l.type !== "smoke") return;
-
-    const day = l.time.split("T")[0];
-    smokeByDay[day] = (smokeByDay[day] || 0) + 1;
-    spendByDay[day] = (spendByDay[day] || 0) + l.price;
+    const d = new Date(l.time).toLocaleDateString();
+    days[d] = (days[d] || 0) + (l.type === "smoke" ? 1 : 0);
+    if (l.type === "smoke") spend[d] = (spend[d] || 0) + l.price;
   });
 
-  const labels = Object.keys(smokeByDay);
+  progressChart?.destroy();
+  spendChart?.destroy();
 
-  if (progressChart) progressChart.destroy();
-  progressChart = new Chart(progressCtx, {
+  progressChart = new Chart(progressChartEl, {
     type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Cigarettes",
-        data: labels.map(d => smokeByDay[d]),
-        borderColor: "#38bdf8",
-        tension: 0.4
-      }]
-    }
+    data: { labels: Object.keys(days), datasets: [{ label: "Cigarettes", data: Object.values(days) }] }
   });
 
-  if (spendChart) spendChart.destroy();
-  spendChart = new Chart(spendCtx, {
+  spendChart = new Chart(spendChartEl, {
     type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "₹ Spent",
-        data: labels.map(d => spendByDay[d]),
-        backgroundColor: "#f87171"
-      }]
-    }
+    data: { labels: Object.keys(spend), datasets: [{ label: "₹ Spent", data: Object.values(spend) }] }
   });
 }
 
-/* ================= HEATMAP ================= */
 function renderHeatmap() {
-  const heat = document.getElementById("heatmap");
-  if (!heat) return;
-
-  heat.innerHTML = "";
-  for (let h = 0; h < 24; h++) {
-    const count = data.logs.filter(
-      l => l.type === "smoke" && new Date(l.time).getHours() === h
-    ).length;
-
-    const cell = document.createElement("div");
-    cell.className = "heat";
-    cell.style.opacity = Math.min(1, count / 4);
-    heat.appendChild(cell);
-  }
+  heatmap.innerHTML = "";
+  const hours = Array(24).fill(0);
+  data.logs.forEach(l => hours[new Date(l.time).getHours()]++);
+  hours.forEach((v,i)=>{
+    const d=document.createElement("div");
+    d.style.background=`rgba(14,165,233,${Math.min(.9,v/5+.1)})`;
+    d.textContent=`${i}:00`;
+    heatmap.appendChild(d);
+  });
 }
 
-/* ================= INIT ================= */
+syncUI();
 updateCharts();
 renderHeatmap();
