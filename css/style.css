@@ -99,3 +99,57 @@ section {
   text-align: center;
   font-size: 0.75rem;
 }
+
+body {
+  font-family: system-ui;
+  padding: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+.stats div {
+  margin-bottom: 6px;
+}
+
+button {
+  padding: 10px;
+  margin: 6px;
+}
+
+.heatmap, #heatmap {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+}
+
+.heat {
+  padding: 8px;
+  background: #eee;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.hot {
+  background: #ff8a80;
+}
+
+.install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #111;
+  color: white;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
