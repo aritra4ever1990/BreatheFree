@@ -1,94 +1,137 @@
-document.addEventListener("DOMContentLoaded", () => init());
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (id) => document.getElementById(id);
 
-function init() {
-  const data = JSON.parse(localStorage.getItem("bf")) || {
+  /* ---------- SAFE ELEMENT MAP ---------- */
+  const el = {
+    streak: $("streak"),
+    smokedToday: $("smokedToday"),
+    wallet: $("wallet"),
+    awards: $("awards"),
+    clock: $("clock"),
+    message: $("message"),
+    aiInsight: $("aiInsight"),
+    dangerHours: $("dangerHours"),
+    heatmap: $("heatmap"),
+    chart: $("progressChart"),
+
+    smokeBtn: $("smokeBtn"),
+    craveBtn: $("craveBtn"),
+    stopBtn: $("stopBtn"),
+  };
+
+  /* ---------- STATE ---------- */
+  const state = JSON.parse(localStorage.getItem("bf")) || {
     smoked: [],
     cravings: [],
     wallet: 0,
-    awards: 0
+    awards: 0,
   };
 
-  const $ = id => document.getElementById(id);
+  /* ---------- SAFE SETTERS ---------- */
+  const setText = (node, value) => {
+    if (node) node.textContent = value;
+  };
 
-  // CLOCK
-  setInterval(() => {
-    $("clock").textContent = new Date().toLocaleTimeString();
-  }, 1000);
-
-  // BUTTONS
-  $("smokeBtn").onclick = () => addSmoke();
-  $("craveBtn").onclick = () => startCraving();
-  $("stopBtn").onclick = () => stopCraving();
-
-  function addSmoke() {
-    const now = new Date();
-    data.smoked.push(now.toISOString());
-    data.wallet -= 10;
-    save();
-    render();
+  /* ---------- CLOCK ---------- */
+  if (el.clock) {
+    setInterval(() => {
+      el.clock.textContent = new Date().toLocaleTimeString();
+    }, 1000);
   }
 
-  function startCraving() {
-    data.cravings.push(Date.now());
-    $("message").textContent = "Craving started ⏳ Stay strong!";
-    save();
+  /* ---------- BUTTON HANDLERS ---------- */
+  if (el.smokeBtn) {
+    el.smokeBtn.onclick = () => {
+      const now = new Date();
+      state.smoked.push(now.toISOString());
+      state.wallet -= 10;
+      save();
+      render();
+    };
   }
 
-  function stopCraving() {
-    $("message").textContent = "You beat the craving 💪";
+  if (el.craveBtn) {
+    el.craveBtn.onclick = () => {
+      state.cravings.push(Date.now());
+      setText(el.message, "Craving started ⏳ Stay strong.");
+      save();
+    };
   }
 
+  if (el.stopBtn) {
+    el.stopBtn.onclick = () => {
+      setText(el.message, "You beat the craving 💪 Proud of you.");
+    };
+  }
+
+  /* ---------- SAVE ---------- */
   function save() {
-    localStorage.setItem("bf", JSON.stringify(data));
+    localStorage.setItem("bf", JSON.stringify(state));
   }
 
+  /* ---------- RENDER ---------- */
   function render() {
-    $("smokedToday").textContent = data.smoked.length;
-    $("wallet").textContent = "₹" + data.wallet;
-    $("awards").textContent = "₹" + Math.floor(data.awards);
+    setText(el.smokedToday, state.smoked.length);
+    setText(el.wallet, `₹${state.wallet}`);
+    setText(el.awards, `₹${state.awards}`);
     renderChart();
     renderHeatmap();
-    aiInsight();
+    renderAI();
   }
 
+  /* ---------- CHART ---------- */
   function renderChart() {
-    const ctx = $("progressChart").getContext("2d");
-    const hours = Array(24).fill(0);
+    if (!el.chart || typeof Chart === "undefined") return;
 
-    data.smoked.forEach(t => {
+    const hours = Array(24).fill(0);
+    state.smoked.forEach(t => {
       hours[new Date(t).getHours()]++;
     });
 
-    if (window.chart) window.chart.destroy();
+    if (window._bfChart) window._bfChart.destroy();
 
-    window.chart = new Chart(ctx, {
+    window._bfChart = new Chart(el.chart.getContext("2d"), {
       type: "line",
       data: {
-        labels: [...Array(24).keys()].map(h => h + ":00"),
+        labels: hours.map((_, i) => `${i}:00`),
         datasets: [{
           label: "Cigarettes per Hour",
           data: hours,
-          borderWidth: 3
+          borderWidth: 3,
+          tension: 0.4
         }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true } }
       }
     });
   }
 
+  /* ---------- HEATMAP ---------- */
   function renderHeatmap() {
-    const heat = Array(24).fill(0);
-    data.smoked.forEach(t => heat[new Date(t).getHours()]++);
+    if (!el.heatmap) return;
 
-    $("heatmap").innerHTML = "";
-    heat.forEach(v => {
-      const d = document.createElement("div");
-      d.style.background = `rgba(255,0,0,${v / 5})`;
-      $("heatmap").appendChild(d);
+    el.heatmap.innerHTML = "";
+    const hours = Array(24).fill(0);
+
+    state.smoked.forEach(t => {
+      hours[new Date(t).getHours()]++;
+    });
+
+    hours.forEach(v => {
+      const cell = document.createElement("div");
+      cell.style.background = `rgba(255,0,0,${Math.min(v / 5, 1)})`;
+      el.heatmap.appendChild(cell);
     });
   }
 
-  function aiInsight() {
+  /* ---------- AI COACH ---------- */
+  function renderAI() {
+    if (!el.aiInsight || !el.dangerHours) return;
+
     const counts = {};
-    data.smoked.forEach(t => {
+    state.smoked.forEach(t => {
       const h = new Date(t).getHours();
       counts[h] = (counts[h] || 0) + 1;
     });
@@ -98,16 +141,21 @@ function init() {
       .slice(0, 3)
       .map(([h]) => `${h}:00`);
 
-    $("dangerHours").textContent =
+    setText(
+      el.dangerHours,
       risky.length
-        ? `🔥 Risky hours: ${risky.join(", ")}`
-        : "No risky hours yet";
+        ? `🔥 Danger hours: ${risky.join(", ")}`
+        : "No danger hours detected yet"
+    );
 
-    $("aiInsight").textContent =
+    setText(
+      el.aiInsight,
       risky.length
-        ? `Coach says: Your toughest window is ${risky[0]}. Plan a walk or tea break there.`
-        : "Coach says: Strong start. Keep momentum.";
+        ? `Coach tip: Your toughest window is ${risky[0]}. Plan a distraction before it hits.`
+        : "Coach tip: You're building momentum. Stay sharp."
+    );
   }
 
+  /* ---------- INIT ---------- */
   render();
-}
+});
