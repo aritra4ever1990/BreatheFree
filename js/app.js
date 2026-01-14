@@ -1,76 +1,81 @@
 let data = loadData();
+let cravingInterval = null;
+let cravingSeconds = 300;
 
-const streakEl = document.getElementById("streak");
-const smokedEl = document.getElementById("smokedToday");
-const walletEl = document.getElementById("wallet");
+const smokeCountEl = document.getElementById("smokeCount");
+const streakCountEl = document.getElementById("streakCount");
+const walletEl = document.getElementById("walletAmount");
+const reflectionText = document.getElementById("reflectionText");
 const timerEl = document.getElementById("timer");
-const messageEl = document.getElementById("message");
+const cravingTimerBox = document.getElementById("cravingTimer");
 
-function resetIfNewDay() {
-  const today = new Date().toDateString();
-  if (data.lastDate !== today) {
-    data.smokedToday = 0;
-    data.lastDate = today;
-    saveData(data);
-  }
+function updateUI() {
+  smokeCountEl.textContent = data.smokeCount;
+  streakCountEl.textContent = data.streak;
+  walletEl.textContent = `₹${data.wallet}`;
 }
 
-function render() {
-  resetIfNewDay();
-  streakEl.textContent = data.streak;
-  smokedEl.textContent = data.smokedToday;
-  walletEl.textContent = "₹" + data.wallet;
-}
+updateUI();
 
+/* 🚬 SMOKE BUTTON */
 document.getElementById("smokeBtn").onclick = () => {
-  const price = prompt("Price of this cigarette?");
-  if (!price) return;
+  let price = data.cigarettePrice;
 
-  data.smokedToday++;
-  data.wallet -= Number(price);
+  if (!price) {
+    price = parseFloat(prompt("Enter cigarette price (₹):"));
+    if (isNaN(price)) return;
+    data.cigarettePrice = price;
+  }
 
-  data.logs.push({
-    type: "smoke",
-    price: Number(price),
-    time: new Date().toISOString()
+  data.smokeCount++;
+  data.wallet -= price;
+
+  data.smokeLogs.push({
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
+    price
   });
 
+  reflectionText.textContent = "It’s okay. Awareness is the first step 🌱";
   saveData(data);
-  render();
+  updateUI();
 };
 
+/* 😣 CRAVING BUTTON */
 document.getElementById("cravingBtn").onclick = () => {
-  let seconds = 300;
-  timerEl.classList.remove("hidden");
-  messageEl.textContent = "";
+  if (cravingInterval) return;
 
-  const interval = setInterval(() => {
-    seconds--;
-    timerEl.textContent = `⏱ ${Math.floor(seconds/60)}:${seconds%60
-      .toString()
-      .padStart(2, "0")}`;
+  cravingSeconds = 300;
+  cravingTimerBox.classList.remove("hidden");
+  updateTimer();
 
-    if (seconds <= 0) {
-      clearInterval(interval);
-      timerEl.classList.add("hidden");
+  cravingInterval = setInterval(() => {
+    cravingSeconds--;
+    updateTimer();
 
-      data.wallet += 50; // reward value
+    if (cravingSeconds <= 0) {
+      clearInterval(cravingInterval);
+      cravingInterval = null;
+      cravingTimerBox.classList.add("hidden");
+
       data.cravingPasses++;
+      data.wallet += data.cigarettePrice || 0;
 
       if (data.cravingPasses % 5 === 0) {
         data.streak++;
       }
 
-      data.logs.push({
-        type: "craving-pass",
-        time: new Date().toISOString()
-      });
+      reflectionText.textContent =
+        "🏆 Craving defeated! You’re building a stronger you.";
 
-      messageEl.textContent = "🎉 Craving defeated! Reward added.";
       saveData(data);
-      render();
+      updateUI();
     }
   }, 1000);
 };
 
-render();
+function updateTimer() {
+  const min = Math.floor(cravingSeconds / 60);
+  const sec = cravingSeconds % 60;
+  timerEl.textContent = `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
