@@ -4,44 +4,47 @@
   <meta charset="UTF-8" />
   <title>BreatheFree</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
   <h1>BreatheFree</h1>
 
   <div class="cards">
-    <div class="card">
-      🔥 Streak
-      <h2 id="streakCount">0</h2>
-      <small>days</small>
-    </div>
-
-    <div class="card">
-      🚭 Smoked
-      <h2 id="smokeCount">0</h2>
-      <small>today</small>
-    </div>
-
-    <div class="card">
-      💰 Wallet
-      <h2 id="walletAmount">₹0</h2>
-    </div>
+    <div class="card">🔥 Streak <h2 id="streak">0</h2></div>
+    <div class="card">🚭 Smoked <h2 id="smoked">0</h2></div>
+    <div class="card">💰 Wallet <h2 id="wallet">₹0</h2></div>
+    <div class="card">🏆 Awards <h2 id="awards">₹0</h2></div>
   </div>
 
   <div class="buttons">
     <button id="smokeBtn" class="danger">I Smoked 🚬</button>
-    <button id="cravingBtn" class="primary">Craving 😣</button>
+    <button id="craveBtn" class="primary">Craving 😣</button>
   </div>
 
-  <div id="cravingTimer" class="hidden">
+  <div id="timerBox" class="hidden">
     ⏳ Craving ends in <span id="timer">05:00</span>
   </div>
 
-  <div class="section">
-    🤖 <strong>AI Reflection</strong>
-    <p id="reflectionText">Stay strong. One craving at a time 💪</p>
-  </div>
+  <section>
+    <h3>📈 Progress</h3>
+    <canvas id="progressChart"></canvas>
+  </section>
+
+  <section>
+    <h3>💸 Spend Analysis</h3>
+    <canvas id="spendChart"></canvas>
+  </section>
+
+  <section>
+    <h3>🕒 Hourly Heatmap</h3>
+    <div id="heatmap"></div>
+  </section>
 
   <script src="js/storage.js"></script>
   <script src="js/app.js"></script>

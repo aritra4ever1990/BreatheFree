@@ -1,9 +1,8 @@
 {
   "name": "BreatheFree",
   "short_name": "BreatheFree",
-  "start_url": "./",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#22c55e",
-  "icons": []
+  "background_color": "#eafff6",
+  "theme_color": "#38bdf8"
 }

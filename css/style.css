@@ -1,78 +1,63 @@
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
-  background: linear-gradient(180deg, #e9fdf4, #f6fffb);
+  font-family: system-ui;
+  background: linear-gradient(#eafff6, #f6fffb);
   text-align: center;
   padding: 20px;
   color: #064635;
 }
 
-h1 {
-  font-size: 2.4rem;
-  margin-bottom: 20px;
-}
+h1 { font-size: 2.5rem; }
 
 .cards {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 25px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
+  gap: 15px;
+  margin: 20px 0;
 }
 
 .card {
   background: white;
   border-radius: 18px;
-  padding: 18px;
-  width: 120px;
+  padding: 16px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-
-.card h2 {
-  margin: 8px 0;
-  font-size: 1.8rem;
 }
 
 .buttons {
   display: flex;
+  gap: 15px;
   justify-content: center;
-  gap: 20px;
-  margin: 25px 0;
+  margin: 20px 0;
 }
 
 button {
-  border: none;
-  padding: 16px 28px;
+  padding: 16px 30px;
   font-size: 1.1rem;
   border-radius: 30px;
+  border: none;
   cursor: pointer;
 }
 
-.danger {
-  background: #ff5252;
-  color: white;
-}
+.danger { background:#ff5252; color:white; }
+.primary { background:#38bdf8; color:#04364a; }
 
-.primary {
-  background: #38bdf8;
-  color: #04364a;
-}
-
-button:active {
-  transform: scale(0.96);
-}
-
-.section {
-  background: white;
-  margin-top: 25px;
-  padding: 18px;
-  border-radius: 20px;
+section {
+  background:white;
+  padding:20px;
+  margin-top:20px;
+  border-radius:20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
-#cravingTimer {
-  margin-top: 15px;
-  font-size: 1.2rem;
+#heatmap {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
 }
 
-.hidden {
-  display: none;
+.heat {
+  height: 20px;
+  border-radius: 4px;
+  background: #d1fae5;
 }
+
+.hidden { display:none; }
