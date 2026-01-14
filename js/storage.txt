@@ -1,17 +1,17 @@
-const STORAGE_KEY = "breatheFree";
+const KEY = "breatheFreeData";
 
-function loadData() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+function load() {
+  return JSON.parse(localStorage.getItem(KEY)) || {
+    price: null,
     smokedToday: 0,
     wallet: 0,
     awards: 0,
     streak: 0,
-    cravingsPassed: 0,
     cravingEnd: null,
     logs: []
   };
 }
 
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+function save(d) {
+  localStorage.setItem(KEY, JSON.stringify(d));
 }

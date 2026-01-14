@@ -1,15 +1,13 @@
-let deferredPrompt;
+let deferred;
 const banner = document.getElementById("installBanner");
-const btn = document.getElementById("installBtn");
 
-window.addEventListener("beforeinstallprompt", (e) => {
+window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
-  deferredPrompt = e;
+  deferred = e;
   banner.classList.remove("hidden");
 });
 
-btn.addEventListener("click", async () => {
+document.getElementById("installBtn").onclick = async () => {
   banner.classList.add("hidden");
-  await deferredPrompt.prompt();
-  deferredPrompt = null;
-});
+  await deferred.prompt();
+};
