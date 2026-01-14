@@ -183,25 +183,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- CSV EXPORT ---------- */
   el.exportCSV.onclick = () => {
-    let csv = "Type,Start,End,Duration(min),Success\n";
+  let csv = "Type,Start,End,Duration(min),Success\n";
 
-    state.smoked.forEach((t) => {
-      csv += `Smoke,${new Date(t).toISOString()},,,\n`;
-    });
+  state.smoked.forEach((t) => {
+    if (!t || isNaN(new Date(t))) return;
+    csv += `Smoke,${new Date(t).toISOString()},,,\n`;
+  });
 
-    state.cravings.forEach((c) => {
-      const dur = ((c.end - c.start) / 60000).toFixed(2);
-      csv += `Craving,${new Date(c.start).toISOString()},${new Date(
-        c.end
-      ).toISOString()},${dur},${c.success}\n`;
-    });
+  state.cravings.forEach((c) => {
+    if (!c.start || !c.end) return;
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "breathefree-report.csv";
-    a.click();
-  };
+    const start = new Date(c.start);
+    const end = new Date(c.end);
+    if (isNaN(start) || isNaN(end)) return;
+
+    const dur = ((end - start) / 60000).toFixed(2);
+    csv += `Craving,${start.toISOString()},${end.toISOString()},${dur},${c.success}\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "breathefree-report.csv";
+  a.click();
+};
+
+function renderHourlyProgress() {
+  const box = document.getElementById("hourlyProgress");
+  if (!box) return;
+
+  const hours = Array(24).fill(0);
+
+  state.smoked.forEach((t) => {
+    const d = new Date(t);
+    if (isNaN(d)) return;
+    hours[d.getHours()]++;
+  });
+
+  box.innerHTML = "";
+
+  hours.forEach((count, h) => {
+    const div = document.createElement("div");
+    div.className = "hour-cell " + (count > 0 ? "smoke" : "clean");
+    div.textContent = `${h}:00`;
+    box.appendChild(div);
+  });
+}
+
 
   /* ---------- RENDER ---------- */
   function render() {
@@ -213,6 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     detectDangerHours();
     aiInsight();
     updateCravingTimer();
+renderHourlyProgress();
   }
 
   setInterval(updateCravingTimer, 1000);

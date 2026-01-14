@@ -57,6 +57,7 @@
     <h3>📈 Progress Tracker (Hourly)</h3>
     <canvas id="progressChart"></canvas>
   </section>
+<div id="hourlyProgress" class="hourly-grid"></div>
 
   <!-- HEATMAP -->
   <section>
