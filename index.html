@@ -5,13 +5,9 @@
   <title>BreatheFree</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ CORRECT CSS PATH -->
   <link rel="stylesheet" href="./css/style.css">
-
-  <!-- Optional favicon (prevents 404 warning) -->
-  <link rel="icon" href="./favicon.svg">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
   <!-- TOP BANNER -->
@@ -45,20 +41,18 @@
 
   <!-- ACTION BUTTONS -->
   <div class="actions">
-    <button id="smokeBtn">🚬 I Smoked</button>
-    <button id="craveBtn">😣 Craving</button>
-    <button id="stopCraveBtn" disabled>⏹ Stop Craving</button>
+    <button id="smokeBtn" class="btn action-btn">🚬 I Smoked</button>
+    <button id="craveBtn" class="btn action-btn">😣 Craving</button>
+    <button id="stopCraveBtn" class="btn action-btn" disabled>⏹ Stop Craving</button>
   </div>
 
   <!-- STATUS MESSAGE -->
-  <div class="status" id="statusText">
-    Stay strong 💪
-  </div>
+  <div class="status" id="statusText">Stay strong 💪</div>
 
   <!-- PROGRESS TRACKER -->
   <section>
     <h2>📈 Progress Tracker</h2>
-    <ul id="progressList"></ul>
+    <canvas id="progressChart"></canvas>
   </section>
 
   <!-- SPEND ANALYSIS -->
@@ -72,7 +66,6 @@
   <!-- CSV EXPORT -->
   <button class="export" id="exportCSV">⬇ Export CSV</button>
 
-  <!-- ✅ CORRECT JS PATH (root level) -->
   <script src="./js/app.js"></script>
 
 </body>

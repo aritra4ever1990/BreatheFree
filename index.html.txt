@@ -5,7 +5,8 @@
   <title>BreatheFree</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -38,32 +39,34 @@
     </div>
   </div>
 
-  <!-- ACTIONS -->
+  <!-- ACTION BUTTONS -->
   <div class="actions">
-    <button id="smokeBtn">🚬 I Smoked</button>
-    <button id="craveBtn">😣 Craving</button>
-    <button id="stopCraveBtn" disabled>⏹ Stop Craving</button>
+    <button id="smokeBtn" class="btn action-btn">🚬 I Smoked</button>
+    <button id="craveBtn" class="btn action-btn">😣 Craving</button>
+    <button id="stopCraveBtn" class="btn action-btn" disabled>⏹ Stop Craving</button>
   </div>
 
-  <!-- STATUS -->
+  <!-- STATUS MESSAGE -->
   <div class="status" id="statusText">Stay strong 💪</div>
 
-  <!-- PROGRESS -->
+  <!-- PROGRESS TRACKER -->
   <section>
     <h2>📈 Progress Tracker</h2>
-    <ul id="progressList"></ul>
+    <canvas id="progressChart"></canvas>
   </section>
 
-  <!-- SPEND -->
+  <!-- SPEND ANALYSIS -->
   <section>
     <h2>💸 Spend Analysis</h2>
-    <p>Total Cigarettes: <span id="totalCigs">0</span></p>
-    <p>Money Spent: ₹<span id="moneySpent">0</span></p>
-    <p>Money Saved: ₹<span id="moneySaved">0</span></p>
+    <p>Total Cigarettes: <strong><span id="totalCigs">0</span></strong></p>
+    <p>Money Spent: ₹<strong><span id="moneySpent">0</span></strong></p>
+    <p>Money Saved: ₹<strong><span id="moneySaved">0</span></strong></p>
   </section>
 
+  <!-- CSV EXPORT -->
   <button class="export" id="exportCSV">⬇ Export CSV</button>
 
-  <script src="./app.js"></script>
+  <script src="./js/app.js"></script>
+
 </body>
 </html>
