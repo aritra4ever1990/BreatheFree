@@ -3,67 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <title>BreatheFree</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href=".css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
-<!-- Animated Top Banner -->
-<div class="top-banner">
-  🌿 <strong>BreatheFree</strong>
-  <span id="liveTime"></span>
-</div>
+  <!-- TOP BANNER -->
+  <div class="top-banner">
+    🌿 <strong>BreatheFree</strong>
+    <span id="clock"></span>
+  </div>
 
-<div class="container">
-
-  <!-- Stats Cards -->
-  <div class="stats-grid">
+  <!-- DASHBOARD -->
+  <div class="dashboard">
     <div class="card gradient-orange">
-      <div class="big-number" id="streak">1</div>
-      <div class="label">🔥 STREAK</div>
+      <h1 id="streak">0</h1>
+      <p>🔥 Streak (days)</p>
     </div>
 
     <div class="card gradient-red">
-      <div class="big-number" id="smoked">0</div>
-      <div class="label">🚭 SMOKED</div>
+      <h1 id="smoked">0</h1>
+      <p>🚭 Smoked Today</p>
     </div>
 
     <div class="card gradient-green">
-      <div class="big-number" id="wallet">₹0</div>
-      <div class="label">💰 WALLET</div>
+      <h1 id="wallet">₹0</h1>
+      <p>💰 Wallet</p>
     </div>
 
     <div class="card gradient-purple">
-      <div class="big-number" id="awards">₹0</div>
-      <div class="label">🏆 AWARDS</div>
+      <h1 id="awards">₹0</h1>
+      <p>🏆 Awards</p>
     </div>
   </div>
 
-  <!-- Actions -->
+  <!-- ACTIONS -->
   <div class="actions">
-    <button id="smokeBtn" class="btn danger">I Smoked 🚬</button>
-    <button id="craveBtn" class="btn warning">Craving 😣</button>
-    <button id="stopCraveBtn" class="btn neutral" disabled>Stop Craving ⏹</button>
+    <button id="smokeBtn">🚬 I Smoked</button>
+    <button id="craveBtn">😣 Craving</button>
+    <button id="stopCraveBtn" disabled>⏹ Stop Craving</button>
   </div>
 
-  <!-- Craving Info -->
-  <div class="info" id="cravingInfo"></div>
+  <!-- STATUS -->
+  <div class="status" id="statusText">Stay strong 💪</div>
 
-  <!-- Progress -->
-  <section class="section">
+  <!-- PROGRESS -->
+  <section>
     <h2>📈 Progress Tracker</h2>
     <ul id="progressList"></ul>
   </section>
 
-  <!-- Spend Analysis -->
-  <section class="section">
+  <!-- SPEND -->
+  <section>
     <h2>💸 Spend Analysis</h2>
-    <div id="spendInfo"></div>
-    <button class="btn export" onclick="exportCSV()">⬇ Export CSV</button>
+    <p>Total Cigarettes: <span id="totalCigs">0</span></p>
+    <p>Money Spent: ₹<span id="moneySpent">0</span></p>
+    <p>Money Saved: ₹<span id="moneySaved">0</span></p>
   </section>
 
-</div>
+  <button class="export" id="exportCSV">⬇ Export CSV</button>
 
-<script src="app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

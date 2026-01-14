@@ -1,110 +1,125 @@
-const PRICE_PER_CIG = 10;
-
-let data = JSON.parse(localStorage.getItem("breathefree")) || {
-  smoked: [],
-  cravings: [],
+let data = JSON.parse(localStorage.getItem("breatheFree")) || {
+  smokeLogs: [],
+  cravingLogs: [],
+  wallet: 0,
+  awards: 0,
+  price: null
 };
-
-let cravingTimer = null;
-let cravingStart = null;
-
-// DOM
-const smokedEl = document.getElementById("smoked");
-const walletEl = document.getElementById("wallet");
-const awardsEl = document.getElementById("awards");
-const progressList = document.getElementById("progressList");
-const spendInfo = document.getElementById("spendInfo");
-const cravingInfo = document.getElementById("cravingInfo");
 
 const smokeBtn = document.getElementById("smokeBtn");
 const craveBtn = document.getElementById("craveBtn");
 const stopCraveBtn = document.getElementById("stopCraveBtn");
 
-// Live Time
+let cravingTimer = null;
+let cravingStart = null;
+
+// CLOCK
 setInterval(() => {
-  document.getElementById("liveTime").innerText =
-    " • " + new Date().toLocaleTimeString();
+  document.getElementById("clock").textContent =
+    new Date().toLocaleTimeString();
 }, 1000);
 
-// Smoke
-smokeBtn.onclick = () => {
-  data.smoked.push({ time: new Date().toISOString() });
+// PRICE SETUP
+if (!data.price) {
+  data.price = Number(prompt("Enter price per cigarette"));
   save();
+}
+
+// SMOKE
+smokeBtn.onclick = () => {
+  const now = new Date();
+  data.smokeLogs.push({ date: now.toISOString() });
+  data.wallet -= data.price;
+  save();
+  render();
 };
 
-// Craving
+// CRAVING START
 craveBtn.onclick = () => {
-  cravingStart = Date.now();
   smokeBtn.disabled = true;
   stopCraveBtn.disabled = false;
+  cravingStart = Date.now();
 
-  cravingTimer = setInterval(() => {
-    const sec = Math.floor((Date.now() - cravingStart) / 1000);
-    cravingInfo.innerText = `⏳ Craving running: ${sec}s`;
-  }, 1000);
+  cravingTimer = setTimeout(() => {
+    data.wallet += data.price;
+    data.awards += 10;
+    data.cravingLogs.push({
+      start: cravingStart,
+      end: Date.now(),
+      success: true
+    });
+    resetCraving();
+  }, 5 * 60 * 1000);
+
+  document.getElementById("statusText").textContent =
+    "Craving started… stay strong ⏳";
 };
 
+// CRAVING STOP
 stopCraveBtn.onclick = () => {
-  clearInterval(cravingTimer);
-  const duration = Math.floor((Date.now() - cravingStart) / 1000);
-  data.cravings.push({
-    start: new Date(cravingStart).toISOString(),
-    duration,
+  clearTimeout(cravingTimer);
+  data.cravingLogs.push({
+    start: cravingStart,
+    end: Date.now(),
+    success: false
   });
+  resetCraving();
+};
 
-  cravingInfo.innerText = `✅ Craving stopped (${duration}s)`;
+function resetCraving() {
   smokeBtn.disabled = false;
   stopCraveBtn.disabled = true;
+  document.getElementById("statusText").textContent =
+    "Craving resolved 💪";
   save();
-};
-
-// Save + Render
-function save() {
-  localStorage.setItem("breathefree", JSON.stringify(data));
   render();
 }
 
-function render() {
-  smokedEl.innerText = data.smoked.length;
-
-  const spent = data.smoked.length * PRICE_PER_CIG;
-  walletEl.innerText = `₹-${spent}`;
-  awardsEl.innerText = `₹${Math.max(0, spent * 0.3)}`;
-
-  progressList.innerHTML = "";
-  data.smoked.forEach((s, i) => {
-    const li = document.createElement("li");
-    li.innerText = `#${i + 1} • ${new Date(s.time).toLocaleString()}`;
-    progressList.appendChild(li);
+// CSV EXPORT
+document.getElementById("exportCSV").onclick = () => {
+  let rows = ["Type,Date,Time,Duration(min)"];
+  data.smokeLogs.forEach(s => {
+    let d = new Date(s.date);
+    rows.push(`Smoke,${d.toLocaleDateString()},${d.toLocaleTimeString()},`);
+  });
+  data.cravingLogs.forEach(c => {
+    let mins = ((c.end - c.start) / 60000).toFixed(1);
+    let d = new Date(c.start);
+    rows.push(`Craving,${d.toLocaleDateString()},${d.toLocaleTimeString()},${mins}`);
   });
 
-  spendInfo.innerHTML = `
-    🚬 Cigarettes: ${data.smoked.length}<br/>
-    💸 Spent: ₹${spent}<br/>
-    💚 Saved: ₹${spent * 0.3}
-  `;
-}
-
-// CSV Export
-function exportCSV() {
-  let rows = [["Type", "Date", "Time", "Duration(s)"]];
-
-  data.smoked.forEach(s => {
-    const d = new Date(s.time);
-    rows.push(["Smoke", d.toLocaleDateString(), d.toLocaleTimeString(), ""]);
-  });
-
-  data.cravings.forEach(c => {
-    const d = new Date(c.start);
-    rows.push(["Craving", d.toLocaleDateString(), d.toLocaleTimeString(), c.duration]);
-  });
-
-  const csv = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "breathefree-report.csv";
   a.click();
+};
+
+// SAVE & RENDER
+function save() {
+  localStorage.setItem("breatheFree", JSON.stringify(data));
+}
+
+function render() {
+  const today = new Date().toDateString();
+  const todaySmokes = data.smokeLogs.filter(
+    s => new Date(s.date).toDateString() === today
+  );
+
+  document.getElementById("smoked").textContent = todaySmokes.length;
+  document.getElementById("wallet").textContent = "₹" + data.wallet;
+  document.getElementById("awards").textContent = "₹" + data.awards;
+
+  document.getElementById("totalCigs").textContent = data.smokeLogs.length;
+  document.getElementById("moneySpent").textContent =
+    data.smokeLogs.length * data.price;
+  document.getElementById("moneySaved").textContent = data.awards;
+
+  const list = document.getElementById("progressList");
+  list.innerHTML = "";
+  data.smokeLogs.slice(-10).forEach(s => {
+    list.innerHTML += `<li>${new Date(s.date).toLocaleString()}</li>`;
+  });
 }
 
 render();
