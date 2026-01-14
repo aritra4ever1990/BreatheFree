@@ -1,136 +1,126 @@
-const STORAGE = "breathefree-data";
-const CRAVING_KEY = "cravingEndTime";
+// ===== DOM ELEMENTS =====
+const smokeBtn = document.getElementById("smokeBtn");
+const cravingBtn = document.getElementById("cravingBtn");
 
-const defaultData = {
+const smokedTodayEl = document.getElementById("smokedToday");
+const walletEl = document.getElementById("walletAmount");
+const awardEl = document.getElementById("awardAmount");
+const streakEl = document.getElementById("streakCount");
+const aiMsg = document.getElementById("aiMessage");
+const cravingTimerEl = document.getElementById("cravingTimer");
+const cravingSection = document.getElementById("cravingSection");
+
+// ===== STATE =====
+let data = JSON.parse(localStorage.getItem("breatheFree")) || {
   smokedToday: 0,
-  streak: 0,
   wallet: 0,
   awards: 0,
-  price: 10,
-  cravingPasses: 0,
+  streak: 0,
+  cravingsPassed: 0,
+  cravingEnd: null,
   logs: []
 };
 
-let data = JSON.parse(localStorage.getItem(STORAGE)) || defaultData;
+const CIG_PRICE = 10;
+const CRAVING_TIME = 5 * 60 * 1000;
 
+// ===== SAVE =====
 function save() {
-  localStorage.setItem(STORAGE, JSON.stringify(data));
+  localStorage.setItem("breatheFree", JSON.stringify(data));
 }
 
-function syncUI() {
-  streak.textContent = data.streak;
-  smoked.textContent = data.smokedToday;
-  wallet.textContent = data.wallet;
-  awards.textContent = data.awards;
+// ===== UI UPDATE =====
+function render() {
+  smokedTodayEl.innerText = data.smokedToday;
+  walletEl.innerText = `₹${data.wallet}`;
+  awardEl.innerText = `₹${data.awards}`;
+  streakEl.innerText = data.streak;
 }
+render();
 
-const quotes = {
-  smoke: [
-    "A slip doesn’t erase progress. Awareness matters.",
-    "Notice the trigger — that’s growth already.",
-    "Be patient with yourself. Change is hard."
-  ],
-  craving: [
-    "You stayed present — the urge passed.",
-    "That was discipline in action.",
-    "Each resisted craving builds strength."
-  ]
-};
-
-function showQuote(type) {
-  aiQuote.textContent = quotes[type][Math.floor(Math.random()*quotes[type].length)];
-  aiQuote.classList.remove("hidden");
-  setTimeout(() => aiQuote.classList.add("hidden"), 5000);
-}
-
-smokeBtn.onclick = () => {
+// ===== SMOKE BUTTON =====
+smokeBtn.addEventListener("click", () => {
   data.smokedToday++;
-  data.wallet -= data.price;
-  data.logs.push({ type: "smoke", time: new Date().toISOString(), price: data.price });
-  showQuote("smoke");
+  data.wallet -= CIG_PRICE;
+
+  data.logs.push({
+    type: "smoke",
+    time: new Date().toISOString()
+  });
+
+  aiMsg.innerText = getSmokeMessage();
   save();
-  syncUI();
-  updateCharts();
-  renderHeatmap();
-};
+  render();
+});
 
-craveBtn.onclick = () => {
-  if (localStorage.getItem(CRAVING_KEY)) return;
-  const end = Date.now() + 5*60*1000;
-  localStorage.setItem(CRAVING_KEY, end);
-  startCravingTimer();
-};
+// ===== CRAVING BUTTON =====
+cravingBtn.addEventListener("click", () => {
+  if (data.cravingEnd) return;
 
-function startCravingTimer() {
-  timerBox.classList.remove("hidden");
+  data.cravingEnd = Date.now() + CRAVING_TIME;
+  cravingSection.classList.remove("hidden");
+  save();
+  tickCraving();
+});
 
-  const interval = setInterval(() => {
-    const end = Number(localStorage.getItem(CRAVING_KEY));
-    const remain = Math.floor((end - Date.now()) / 1000);
+// ===== CRAVING TIMER =====
+function tickCraving() {
+  if (!data.cravingEnd) return;
 
-    if (remain <= 0) {
-      clearInterval(interval);
-      localStorage.removeItem(CRAVING_KEY);
-      timerBox.classList.add("hidden");
+  const remaining = data.cravingEnd - Date.now();
 
-      data.cravingPasses++;
-      data.awards += data.price;
+  if (remaining <= 0) {
+    cravingSuccess();
+    return;
+  }
 
-      if (data.cravingPasses % 5 === 0) data.streak++;
+  const m = Math.floor(remaining / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  cravingTimerEl.innerText = `⏳ Craving ends in ${m}:${s
+    .toString()
+    .padStart(2, "0")}`;
 
-      data.logs.push({ type: "craving", time: new Date().toISOString(), price: data.price });
-      showQuote("craving");
-      save();
-      syncUI();
-      updateCharts();
-      renderHeatmap();
-      return;
-    }
-
-    timer.textContent = `Craving ends in ${Math.floor(remain/60)}:${String(remain%60).padStart(2,"0")}`;
-  }, 1000);
+  setTimeout(tickCraving, 1000);
 }
 
-if (localStorage.getItem(CRAVING_KEY)) startCravingTimer();
+// ===== CRAVING SUCCESS =====
+function cravingSuccess() {
+  data.cravingEnd = null;
+  data.wallet += CIG_PRICE;
+  data.awards += CIG_PRICE;
+  data.cravingsPassed++;
 
-let progressChart, spendChart;
+  if (data.cravingsPassed % 5 === 0) {
+    data.streak++;
+  }
 
-function updateCharts() {
-  const days = {};
-  const spend = {};
-
-  data.logs.forEach(l => {
-    const d = new Date(l.time).toLocaleDateString();
-    days[d] = (days[d] || 0) + (l.type === "smoke" ? 1 : 0);
-    if (l.type === "smoke") spend[d] = (spend[d] || 0) + l.price;
-  });
-
-  progressChart?.destroy();
-  spendChart?.destroy();
-
-  progressChart = new Chart(progressChartEl, {
-    type: "line",
-    data: { labels: Object.keys(days), datasets: [{ label: "Cigarettes", data: Object.values(days) }] }
-  });
-
-  spendChart = new Chart(spendChartEl, {
-    type: "bar",
-    data: { labels: Object.keys(spend), datasets: [{ label: "₹ Spent", data: Object.values(spend) }] }
-  });
+  aiMsg.innerText = getCravingMessage();
+  cravingSection.classList.add("hidden");
+  save();
+  render();
 }
 
-function renderHeatmap() {
-  heatmap.innerHTML = "";
-  const hours = Array(24).fill(0);
-  data.logs.forEach(l => hours[new Date(l.time).getHours()]++);
-  hours.forEach((v,i)=>{
-    const d=document.createElement("div");
-    d.style.background=`rgba(14,165,233,${Math.min(.9,v/5+.1)})`;
-    d.textContent=`${i}:00`;
-    heatmap.appendChild(d);
-  });
+// ===== AI MESSAGES =====
+function getSmokeMessage() {
+  const msgs = [
+    "Slip-ups happen. What matters is awareness.",
+    "Pause. The next choice is still yours.",
+    "One moment doesn’t define your journey."
+  ];
+  return msgs[Math.floor(Math.random() * msgs.length)];
 }
 
-syncUI();
-updateCharts();
-renderHeatmap();
+function getCravingMessage() {
+  const msgs = [
+    "🔥 You won this craving. Huge win!",
+    "💪 Discipline beats desire. Well done!",
+    "🏆 Craving defeated. You’re stronger."
+  ];
+  return msgs[Math.floor(Math.random() * msgs.length)];
+}
+
+// ===== RESUME TIMER AFTER REFRESH =====
+if (data.cravingEnd) {
+  cravingSection.classList.remove("hidden");
+  tickCraving();
+}
