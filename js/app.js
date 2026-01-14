@@ -1,18 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
 
-  /* ---------- SAFE ELEMENT MAP ---------- */
   const el = {
-    streak: $("streak"),
     smokedToday: $("smokedToday"),
     wallet: $("wallet"),
     awards: $("awards"),
-    clock: $("clock"),
     message: $("message"),
     aiInsight: $("aiInsight"),
-    dangerHours: $("dangerHours"),
-    heatmap: $("heatmap"),
-    chart: $("progressChart"),
+    cravingTimer: $("cravingTimer"),
 
     smokeBtn: $("smokeBtn"),
     craveBtn: $("craveBtn"),
@@ -22,29 +17,29 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- STATE ---------- */
   const state = JSON.parse(localStorage.getItem("bf")) || {
     smoked: [],
-    cravings: [],
     wallet: 0,
     awards: 0,
+    craving: null, // { startTime, rewarded }
   };
 
-  /* ---------- SAFE SETTERS ---------- */
+  const CRAVING_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  /* ---------- HELPERS ---------- */
+  const save = () =>
+    localStorage.setItem("bf", JSON.stringify(state));
+
   const setText = (node, value) => {
     if (node) node.textContent = value;
   };
 
-  /* ---------- CLOCK ---------- */
-  if (el.clock) {
-    setInterval(() => {
-      el.clock.textContent = new Date().toLocaleTimeString();
-    }, 1000);
-  }
-
-  /* ---------- BUTTON HANDLERS ---------- */
+  /* ---------- BUTTONS ---------- */
   if (el.smokeBtn) {
     el.smokeBtn.onclick = () => {
-      const now = new Date();
-      state.smoked.push(now.toISOString());
+      if (state.craving) return;
+
+      state.smoked.push(Date.now());
       state.wallet -= 10;
+      setText(el.message, "Noted. Awareness builds control.");
       save();
       render();
     };
@@ -52,21 +47,88 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (el.craveBtn) {
     el.craveBtn.onclick = () => {
-      state.cravings.push(Date.now());
-      setText(el.message, "Craving started ⏳ Stay strong.");
+      if (state.craving) return;
+
+      state.craving = {
+        startTime: Date.now(),
+        rewarded: false,
+      };
+
+      setText(
+        el.message,
+        "Craving started ⏳ Breathe. This urge will pass."
+      );
       save();
+      render();
     };
   }
 
   if (el.stopBtn) {
     el.stopBtn.onclick = () => {
-      setText(el.message, "You beat the craving 💪 Proud of you.");
+      if (!state.craving) return;
+
+      const elapsed = Date.now() - state.craving.startTime;
+
+      if (elapsed >= CRAVING_DURATION && !state.craving.rewarded) {
+        state.wallet += 10;
+        state.awards += 10;
+        state.craving.rewarded = true;
+
+        setText(
+          el.message,
+          "🏆 Craving defeated! You just earned a reward."
+        );
+      } else {
+        setText(
+          el.message,
+          "Craving stopped early. That’s okay — progress is learning."
+        );
+      }
+
+      state.craving = null;
+      save();
+      render();
     };
   }
 
-  /* ---------- SAVE ---------- */
-  function save() {
-    localStorage.setItem("bf", JSON.stringify(state));
+  /* ---------- CRAVING TIMER ---------- */
+  function updateCravingTimer() {
+    if (!state.craving) {
+      setText(el.cravingTimer, "");
+      if (el.smokeBtn) el.smokeBtn.disabled = false;
+      return;
+    }
+
+    if (el.smokeBtn) el.smokeBtn.disabled = true;
+
+    const elapsed = Date.now() - state.craving.startTime;
+    const remaining = Math.max(0, CRAVING_DURATION - elapsed);
+
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000)
+      .toString()
+      .padStart(2, "0");
+
+    setText(
+      el.cravingTimer,
+      `⏱️ Craving ends in ${mins}:${secs}`
+    );
+
+    if (remaining === 0 && !state.craving.rewarded) {
+      state.wallet += 10;
+      state.awards += 10;
+      state.craving.rewarded = true;
+
+      setText(
+        el.message,
+        "🔥 You rode the wave! Craving passed — reward unlocked."
+      );
+      setText(
+        el.aiInsight,
+        "Coach says: This is how rewiring happens. Remember this win."
+      );
+      save();
+    }
   }
 
   /* ---------- RENDER ---------- */
@@ -74,88 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setText(el.smokedToday, state.smoked.length);
     setText(el.wallet, `₹${state.wallet}`);
     setText(el.awards, `₹${state.awards}`);
-    renderChart();
-    renderHeatmap();
-    renderAI();
+    updateCravingTimer();
   }
 
-  /* ---------- CHART ---------- */
-  function renderChart() {
-    if (!el.chart || typeof Chart === "undefined") return;
+  /* ---------- TICK ---------- */
+  setInterval(updateCravingTimer, 1000);
 
-    const hours = Array(24).fill(0);
-    state.smoked.forEach(t => {
-      hours[new Date(t).getHours()]++;
-    });
-
-    if (window._bfChart) window._bfChart.destroy();
-
-    window._bfChart = new Chart(el.chart.getContext("2d"), {
-      type: "line",
-      data: {
-        labels: hours.map((_, i) => `${i}:00`),
-        datasets: [{
-          label: "Cigarettes per Hour",
-          data: hours,
-          borderWidth: 3,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: true } }
-      }
-    });
-  }
-
-  /* ---------- HEATMAP ---------- */
-  function renderHeatmap() {
-    if (!el.heatmap) return;
-
-    el.heatmap.innerHTML = "";
-    const hours = Array(24).fill(0);
-
-    state.smoked.forEach(t => {
-      hours[new Date(t).getHours()]++;
-    });
-
-    hours.forEach(v => {
-      const cell = document.createElement("div");
-      cell.style.background = `rgba(255,0,0,${Math.min(v / 5, 1)})`;
-      el.heatmap.appendChild(cell);
-    });
-  }
-
-  /* ---------- AI COACH ---------- */
-  function renderAI() {
-    if (!el.aiInsight || !el.dangerHours) return;
-
-    const counts = {};
-    state.smoked.forEach(t => {
-      const h = new Date(t).getHours();
-      counts[h] = (counts[h] || 0) + 1;
-    });
-
-    const risky = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([h]) => `${h}:00`);
-
-    setText(
-      el.dangerHours,
-      risky.length
-        ? `🔥 Danger hours: ${risky.join(", ")}`
-        : "No danger hours detected yet"
-    );
-
-    setText(
-      el.aiInsight,
-      risky.length
-        ? `Coach tip: Your toughest window is ${risky[0]}. Plan a distraction before it hits.`
-        : "Coach tip: You're building momentum. Stay sharp."
-    );
-  }
-
-  /* ---------- INIT ---------- */
   render();
 });

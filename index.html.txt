@@ -34,6 +34,9 @@
     <button id="stopBtn" class="btn gray">■ Stop</button>
   </section>
 
+<!-- CRAVING TIMER -->
+<div id="cravingTimer"></div>
+
   <!-- MESSAGE -->
   <div id="message" class="message"></div>
 
