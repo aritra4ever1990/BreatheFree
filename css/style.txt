@@ -1,105 +1,82 @@
-* {
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-}
-
 body {
   margin: 0;
-  background: linear-gradient(135deg, #e0fff4, #f6f9ff);
-  padding-bottom: 50px;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #e0fff8, #f7fff3);
 }
 
-.top-banner {
-  background: linear-gradient(90deg, #00c9a7, #4facfe);
+.top-bar {
+  background: linear-gradient(90deg, #00c6ff, #00d2a8);
   color: white;
   padding: 16px;
-  font-size: 22px;
+  font-size: 20px;
   display: flex;
   justify-content: space-between;
-  animation: pulse 6s infinite;
 }
 
-@keyframes pulse {
-  0% {opacity: 1;}
-  50% {opacity: 0.9;}
-  100% {opacity: 1;}
-}
-
-.container {
-  padding: 20px;
-}
-
-/* Dashboard Stats */
-.dashboard {
+.stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 20px;
 }
 
 .card {
-  padding: 25px;
   border-radius: 18px;
+  padding: 20px;
   color: white;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+  animation: pop 0.4s ease;
 }
 
-.card h1 {
-  font-size: 45px;
-  margin: 0;
-}
+.orange { background: #ff9800; }
+.red { background: #ff5252; }
+.green { background: #2ecc71; }
+.purple { background: #9b59b6; }
 
-.card p {
-  margin-top: 8px;
-  font-size: 16px;
-}
-
-.gradient-orange {background: linear-gradient(135deg, #ff9f1c, #ffbf69);}
-.gradient-red {background: linear-gradient(135deg, #ff4d6d, #ff758f);}
-.gradient-green {background: linear-gradient(135deg, #2ec4b6, #90dbf4);}
-.gradient-purple {background: linear-gradient(135deg, #9d4edd, #c77dff);}
-
-/* Actions */
 .actions {
-  margin: 30px 0;
   display: flex;
   gap: 20px;
-  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
 }
 
-button {
-  padding: 16px 32px;
-  font-size: 20px;
-  border-radius: 25px;
+.btn {
+  padding: 18px 32px;
+  font-size: 18px;
+  border-radius: 30px;
   border: none;
   cursor: pointer;
+  transition: transform 0.2s;
 }
+.btn:hover { transform: scale(1.05); }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Craving */
-.status {
-  margin-top: 20px;
-  padding: 15px;
+.message {
+  margin: 20px;
+  padding: 14px;
   background: white;
   border-radius: 12px;
-  font-size: 18px;
 }
 
-/* Chart */
-section {
-  margin: 30px 0;
+.chart-section, .coach {
+  margin: 20px;
   padding: 20px;
   background: white;
-  border-radius: 15px;
+  border-radius: 16px;
 }
 
-/* CSV Export */
-.export {
-  margin: 20px;
-  background: linear-gradient(135deg, #4facfe, #00c9a7);
-  color: white;
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 4px;
+  padding: 10px;
+}
+
+.heatmap div {
+  height: 20px;
+  border-radius: 4px;
+}
+
+@keyframes pop {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
