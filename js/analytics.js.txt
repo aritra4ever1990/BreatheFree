@@ -1,36 +1,19 @@
-function spendAnalysis(data) {
-  const smokes = data.logs.filter(l => l.type === "smoke").length;
+function spendHTML(d) {
+  const smokes = d.logs.filter(l => l.type === "smoke").length;
   return `
-    🚬 Total cigarettes: ${smokes}<br>
-    💸 Money spent: ₹${smokes * data.price}<br>
-    💚 Money saved: ₹${data.awards}
+    🚬 Cigarettes: ${smokes}<br>
+    💸 Spent: ₹${smokes * d.price}<br>
+    💚 Saved: ₹${d.awards}
   `;
 }
 
-function heatmap(data) {
-  const h = Array(24).fill(0);
-  data.logs.forEach(l => {
-    if (l.type === "smoke") {
-      h[new Date(l.time).getHours()]++;
-    }
+function progressHTML(d) {
+  const map = {};
+  d.logs.filter(l => l.type === "smoke").forEach(l => {
+    const day = l.time.slice(0,10);
+    map[day] = (map[day] || 0) + 1;
   });
-  return h.map((v,i)=>`<span class="${v?'hot':''}">${i}</span>`).join("");
-}
-
-function dangerHours(data) {
-  return [...new Set(
-    data.logs.filter(l=>l.type==="smoke")
-      .map(l=>new Date(l.time).getHours())
-  )].slice(0,3).join(", ");
-}
-
-function calendar(data) {
-  const days = {};
-  data.logs.forEach(l=>{
-    if(l.type==="craving"){
-      const d=l.time.slice(0,10);
-      days[d]=(days[d]||0)+1;
-    }
-  });
-  return Object.keys(days).map(d=>`📅 ${d}`).join("<br>");
+  return Object.entries(map)
+    .map(([d,c]) => `${d}: ${c}`)
+    .join("<br>");
 }

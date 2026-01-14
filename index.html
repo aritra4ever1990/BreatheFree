@@ -1,70 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>BreatheFree</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<title>BreatheFree</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/style.css">
+<link rel="manifest" href="manifest.json">
 </head>
 
 <body>
-  <h1>BreatheFree</h1>
 
-  <section class="card">
-    🔥 Streak: <span id="streak">0</span><br>
-    🚭 Smoked today: <span id="smoked">0</span><br>
-    💰 Wallet: ₹<span id="wallet">0</span><br>
-    🏆 Awards: ₹<span id="awards">0</span>
-  </section>
+<!-- Animated Banner -->
+<div id="banner">
+  🌿 BreatheFree • <span id="clock"></span>
+</div>
 
-  <section class="card">
-    <button id="smokeBtn">I Smoked 🚬</button>
-    <button id="craveBtn">Craving 😤</button>
-    <div id="craveTimer"></div>
-  </section>
+<!-- Stat Tiles -->
+<section class="stats">
+  <div class="tile">🔥<h2 id="streak">0</h2><p>Streak</p></div>
+  <div class="tile">🚭<h2 id="smoked">0</h2><p>Smoked</p></div>
+  <div class="tile">💰<h2>₹<span id="wallet">0</span></h2><p>Wallet</p></div>
+  <div class="tile">🏆<h2>₹<span id="awards">0</span></h2><p>Awards</p></div>
+</section>
 
-  <section class="card">
-    🤖 <span id="aiText"></span>
-  </section>
+<!-- Controls -->
+<section class="card">
+  <button id="smokeBtn">I Smoked 🚬</button>
+  <button id="craveBtn">Craving 😖</button>
+  <button id="stopCraveBtn" disabled>Stop Craving ⏹️</button>
+  <div id="craveTimer"></div>
+</section>
 
-  <section class="card">
-    <h3>Spend Analysis</h3>
-    <div id="spend"></div>
-  </section>
+<!-- AI -->
+<section class="card">
+  🤖 <span id="aiText"></span>
+</section>
 
-  <section class="card">
-    <h3>Hourly Heatmap</h3>
-    <div id="heatmap"></div>
-  </section>
+<!-- Progress -->
+<section class="card">
+  <h3>📈 Progress</h3>
+  <div id="progress"></div>
+</section>
 
-  <section class="card">
-    <h3>Danger Hours</h3>
-    <div id="danger"></div>
-  </section>
+<!-- Spend -->
+<section class="card">
+  <h3>💸 Spend Analysis</h3>
+  <div id="spend"></div>
+</section>
 
-  <section class="card">
-    <h3>Streak Calendar</h3>
-    <div id="calendar"></div>
-  </section>
-
-  <section class="card">
-    <button id="exportCSV">📤 Export CSV</button>
-  </section>
-
-  <!-- Install Banner -->
-  <div id="installBanner" class="install hidden">
-    <span>Install BreatheFree</span>
-    <button id="installBtn">Install</button>
-  </div>
+<!-- Export -->
+<section class="card">
+  <button id="exportCSV">📤 Export CSV</button>
+</section>
 
 <script src="js/storage.js"></script>
-<script src="js/ai.js"></script>
 <script src="js/analytics.js"></script>
 <script src="js/craving.js"></script>
-<script src="js/settings.js"></script>
 <script src="js/export.js"></script>
-<script src="js/install.js"></script>
+<script src="js/banner.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

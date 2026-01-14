@@ -1,28 +1,32 @@
-let data = load();
-ensurePrice(data);
+let data = loadData();
 
-const ui = (event) => {
-  document.getElementById("streak").innerText = data.streak;
-  document.getElementById("smoked").innerText = data.smokedToday;
-  document.getElementById("wallet").innerText = data.wallet;
-  document.getElementById("awards").innerText = data.awards;
-  document.getElementById("spend").innerHTML = spendAnalysis(data);
-  document.getElementById("heatmap").innerHTML = heatmap(data);
-  document.getElementById("danger").innerText = dangerHours(data);
-  document.getElementById("calendar").innerHTML = calendar(data);
-  document.getElementById("aiText").innerText = aiMessage(event);
-};
+if (!data.price) {
+  data.price = Number(prompt("Cigarette price (₹)?", 10));
+  saveData(data);
+}
 
-document.getElementById("smokeBtn").onclick = () => {
+function updateUI(event) {
+  streak.innerText = data.streak;
+  smoked.innerText = data.smokedToday;
+  wallet.innerText = data.wallet;
+  awards.innerText = data.awards;
+  spend.innerHTML = spendHTML(data);
+  progress.innerHTML = progressHTML(data);
+  aiText.innerText =
+    event === "smoke"
+      ? "Noted. Awareness builds control."
+      : "Strong craving win 💪";
+}
+
+smokeBtn.onclick = () => {
   data.smokedToday++;
   data.wallet -= data.price;
   data.logs.push({ type: "smoke", time: new Date().toISOString() });
-  save(data);
-  ui("smoke");
+  saveData(data);
+  updateUI("smoke");
 };
 
-document.getElementById("craveBtn").onclick = () => {
-  startCraving(data, ui);
-};
+craveBtn.onclick = () => startCraving(data, updateUI);
+stopCraveBtn.onclick = () => stopCraving(data);
 
-ui();
+updateUI();
