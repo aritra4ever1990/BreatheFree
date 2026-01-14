@@ -1,46 +1,34 @@
-let data = loadData();
-let cravingTimer = null;
-let seconds = 300;
+/* ================= SAFE DATA LOAD ================= */
+let raw = loadData();
 
-/* ---------- DOM ---------- */
+/* 🔐 Auto-heal missing fields */
+let data = {
+  smoked: raw.smoked ?? 0,
+  streak: raw.streak ?? 0,
+  wallet: raw.wallet ?? 0,
+  awards: raw.awards ?? 0,
+  cravingPasses: raw.cravingPasses ?? 0,
+  price: raw.price ?? 0,
+  dailyLimit: raw.dailyLimit ?? 15,
+  logs: Array.isArray(raw.logs) ? raw.logs : []
+};
+
+saveData(data); // persist healed data
+
+/* ================= DOM ================= */
 const smokedEl = document.getElementById("smoked");
 const streakEl = document.getElementById("streak");
 const walletEl = document.getElementById("wallet");
 const awardsEl = document.getElementById("awards");
-const reflectionEl = document.getElementById("reflection"); // may be null
 
 const progressCtx = document.getElementById("progressChart");
 const spendCtx = document.getElementById("spendChart");
 
 let progressChart, spendChart;
+let cravingTimer = null;
+let seconds = 300;
 
-/* ---------- SAFE AI REFLECTION ---------- */
-function setReflection(text) {
-  if (!reflectionEl) return; // 🔐 prevents crash
-  reflectionEl.textContent = text;
-}
-
-function aiReflection(type) {
-  const smokeLines = [
-    "Slip-ups happen. Awareness is progress.",
-    "One cigarette doesn’t erase your effort.",
-    "Pause. Reflect. Reset."
-  ];
-
-  const cravingLines = [
-    "🔥 Strong will! You beat the urge.",
-    "👏 That craving didn’t control you.",
-    "💪 Each win rewires your brain."
-  ];
-
-  setReflection(
-    type === "smoke"
-      ? smokeLines[Math.floor(Math.random() * smokeLines.length)]
-      : cravingLines[Math.floor(Math.random() * cravingLines.length)]
-  );
-}
-
-/* ---------- UI ---------- */
+/* ================= UI ================= */
 function syncUI() {
   smokedEl.textContent = data.smoked;
   streakEl.textContent = data.streak;
@@ -48,15 +36,18 @@ function syncUI() {
   awardsEl.textContent = "₹" + data.awards;
 }
 
-/* ---------- SMOKE ---------- */
+syncUI();
+
+/* ================= SMOKE ================= */
 document.getElementById("smokeBtn").addEventListener("click", () => {
   if (data.smoked >= data.dailyLimit) {
-    alert("Daily smoking limit reached");
+    alert("Daily limit reached");
     return;
   }
 
-  if (!data.price) {
+  if (!data.price || data.price <= 0) {
     data.price = Number(prompt("Price of one cigarette ₹"));
+    if (!data.price) return;
   }
 
   data.smoked++;
@@ -68,37 +59,38 @@ document.getElementById("smokeBtn").addEventListener("click", () => {
     price: data.price
   });
 
-  aiReflection("smoke");
   saveData(data);
   syncUI();
   updateCharts();
   renderHeatmap();
-  renderDangerHours();
 });
 
-/* ---------- CRAVING ---------- */
+/* ================= CRAVING ================= */
 document.getElementById("craveBtn").addEventListener("click", () => {
   if (cravingTimer) return;
 
-  document.getElementById("timerBox").classList.remove("hidden");
+  const timerBox = document.getElementById("timerBox");
+  const timerText = document.getElementById("timer");
+
+  timerBox.classList.remove("hidden");
   seconds = 300;
 
   cravingTimer = setInterval(() => {
     seconds--;
-
-    document.getElementById("timer").textContent =
+    timerText.textContent =
       `0${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
     if (seconds <= 0) {
       clearInterval(cravingTimer);
       cravingTimer = null;
-
-      document.getElementById("timerBox").classList.add("hidden");
+      timerBox.classList.add("hidden");
 
       data.cravingPasses++;
       data.awards += data.price;
 
-      if (data.cravingPasses % 5 === 0) data.streak++;
+      if (data.cravingPasses % 5 === 0) {
+        data.streak++;
+      }
 
       data.logs.push({
         type: "craving",
@@ -106,7 +98,6 @@ document.getElementById("craveBtn").addEventListener("click", () => {
       });
 
       alert("🎉 Craving passed! Reward added.");
-      aiReflection("craving");
 
       saveData(data);
       syncUI();
@@ -116,17 +107,17 @@ document.getElementById("craveBtn").addEventListener("click", () => {
   }, 1000);
 });
 
-/* ---------- CHARTS ---------- */
+/* ================= CHARTS ================= */
 function updateCharts() {
   const smokeByDay = {};
   const spendByDay = {};
 
   data.logs.forEach(l => {
+    if (l.type !== "smoke") return;
+
     const day = l.time.split("T")[0];
-    if (l.type === "smoke") {
-      smokeByDay[day] = (smokeByDay[day] || 0) + 1;
-      spendByDay[day] = (spendByDay[day] || 0) + l.price;
-    }
+    smokeByDay[day] = (smokeByDay[day] || 0) + 1;
+    spendByDay[day] = (spendByDay[day] || 0) + l.price;
   });
 
   const labels = Object.keys(smokeByDay);
@@ -152,14 +143,14 @@ function updateCharts() {
       labels,
       datasets: [{
         label: "₹ Spent",
-        data: labels.map(d => spendByDay[d] || 0),
+        data: labels.map(d => spendByDay[d]),
         backgroundColor: "#f87171"
       }]
     }
   });
 }
 
-/* ---------- HEATMAP ---------- */
+/* ================= HEATMAP ================= */
 function renderHeatmap() {
   const heat = document.getElementById("heatmap");
   if (!heat) return;
@@ -177,26 +168,6 @@ function renderHeatmap() {
   }
 }
 
-/* ---------- DANGER HOURS ---------- */
-function renderDangerHours() {
-  const hourCount = {};
-  data.logs.forEach(l => {
-    if (l.type === "smoke") {
-      const h = new Date(l.time).getHours();
-      hourCount[h] = (hourCount[h] || 0) + 1;
-    }
-  });
-
-  const danger = Object.keys(hourCount)
-    .sort((a, b) => hourCount[b] - hourCount[a])[0];
-
-  if (danger !== undefined) {
-    setReflection(`⚠️ High-risk time: ${danger}:00–${+danger + 1}:00`);
-  }
-}
-
-/* ---------- INIT ---------- */
-syncUI();
+/* ================= INIT ================= */
 updateCharts();
 renderHeatmap();
-renderDangerHours();
