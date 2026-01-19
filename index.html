@@ -1,71 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>BreatheFree</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css" />
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BreatheFree — Cigarette Tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <meta name="theme-color" content="#4a90e2"/>
+  <link rel="manifest" href="manifest.json">
 </head>
-
 <body>
-  <!-- HEADER -->
-  <header class="top-bar">
-    🫁 <strong>BreatheFree</strong>
-    <span id="clock"></span>
-  </header>
+  <main class="app">
+    <header class="app-header">
+      <h1>BreatheFree</h1>
+      <p class="subtitle">Track your daily cigarette intake</p>
+    </header>
 
-  <!-- STATS -->
-  <section class="stats">
-    <div class="card orange"><h1 id="streak">0</h1><p>🔥 Streak (days)</p></div>
-    <div class="card red"><h1 id="smokedToday">0</h1><p>🚭 Smoked Today</p></div>
-    <div class="card green"><h1 id="wallet">₹0</h1><p>💰 Wallet</p></div>
-    <div class="card purple"><h1 id="awards">₹0</h1><p>🏆 Awards</p></div>
-  </section>
+    <section class="tracker-card">
+      <div class="today-row">
+        <div>
+          <label for="dateInput">Date</label>
+          <input type="date" id="dateInput">
+        </div>
 
-  <!-- ACTION BUTTONS -->
-  <section class="actions">
-    <button id="smokeBtn" class="btn red">🚬 I Smoked</button>
-    <button id="craveBtn" class="btn orange">😡 Craving</button>
-    <button id="stopBtn" class="btn gray">■ Stop</button>
-  </section>
+        <div class="count-display">
+          <div class="count-number" id="countNumber">0</div>
+          <div class="count-label">Cigarettes today</div>
+        </div>
+      </div>
 
-<!-- CRAVING TIMER -->
-<div id="cravingTimer"></div>
+      <div class="controls">
+        <button id="decrementBtn" class="btn secondary">-</button>
+        <button id="incrementBtn" class="btn primary">+</button>
+        <input id="manualCount" type="number" min="0" placeholder="Set count" />
+        <button id="setBtn" class="btn">Set</button>
+      </div>
 
-<div id="dangerAlert"></div>
-<div id="streak"></div>
-<button id="exportCSV">📤 Export CSV</button>
+      <div class="actions">
+        <button id="exportBtn" class="btn link">Export CSV</button>
+        <button id="clearBtn" class="btn link danger">Clear data</button>
+      </div>
+    </section>
 
+    <section class="history-card">
+      <h2>Recent history</h2>
+      <ul id="historyList" class="history-list"></ul>
+    </section>
 
-  <!-- MESSAGE -->
-  <div id="message" class="message"></div>
+    <footer class="app-footer">
+      <small>Data stored locally. You can enable sync later with a backend.</small>
+    </footer>
+  </main>
 
-  <!-- AI COACH -->
-  <div class="coach">
-    <h3>🧠 Coach Insight</h3>
-    <div id="aiInsight"></div>
-    <div id="dangerHours"></div>
-  </div>
-
-  <!-- CHART -->
-  <section class="chart-section">
-    <h3>📈 Progress Tracker (Hourly)</h3>
-    <canvas id="progressChart"></canvas>
-  </section>
-<div id="hourlyProgress" class="hourly-grid"></div>
-
-  <!-- HEATMAP -->
-  <section>
-    <h3>🌡️ Smoking Heatmap</h3>
-    <div id="heatmap" class="heatmap"></div>
-  </section>
-
-  <!-- JS (IMPORTANT: defer) -->
-  <script src="js/app.js" defer></script>
+  <script src="js/tracker.js" defer></script>
 </body>
 </html>
