@@ -1,56 +1,13 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BreatheFree — Cigarette Tracker</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <meta name="theme-color" content="#4a90e2"/>
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Improved Tracker</title>
 </head>
 <body>
-  <main class="app">
-    <header class="app-header">
-      <h1>BreatheFree</h1>
-      <p class="subtitle">Track your daily cigarette intake</p>
-    </header>
-
-    <section class="tracker-card">
-      <div class="today-row">
-        <div>
-          <label for="dateInput">Date</label>
-          <input type="date" id="dateInput">
-        </div>
-
-        <div class="count-display">
-          <div class="count-number" id="countNumber">0</div>
-          <div class="count-label">Cigarettes today</div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button id="decrementBtn" class="btn secondary">-</button>
-        <button id="incrementBtn" class="btn primary">+</button>
-        <input id="manualCount" type="number" min="0" placeholder="Set count" />
-        <button id="setBtn" class="btn">Set</button>
-      </div>
-
-      <div class="actions">
-        <button id="exportBtn" class="btn link">Export CSV</button>
-        <button id="clearBtn" class="btn link danger">Clear data</button>
-      </div>
-    </section>
-
-    <section class="history-card">
-      <h2>Recent history</h2>
-      <ul id="historyList" class="history-list"></ul>
-    </section>
-
-    <footer class="app-footer">
-      <small>Data stored locally. You can enable sync later with a backend.</small>
-    </footer>
-  </main>
-
-  <script src="js/tracker.js" defer></script>
+    <h1>Welcome to the Improved Tracker</h1>
+    <script src="js/tracker.js"></script>
 </body>
 </html>
