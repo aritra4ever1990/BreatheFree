@@ -7,7 +7,7 @@
 
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- Chart.js CDN -->
+  <!-- Chart.js (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -46,6 +46,8 @@
             <div class="money-box card-compact">
               <div class="muted">Money spent</div>
               <div id="moneySpent" class="money-amount">$0.00</div>
+              <div class="muted">Saved</div>
+              <div id="savedAmount" class="money-amount">$0.00</div>
             </div>
           </div>
 
@@ -53,6 +55,13 @@
             <button id="decrementBtn" class="btn large secondary">−</button>
             <button id="addNowBtn" class="btn large primary">Log Now</button>
             <button id="incrementBtn" class="btn large secondary">+</button>
+          </div>
+
+          <!-- Craving controls added here -->
+          <div class="craving-row">
+            <button id="startCravingBtn" class="btn large accent">Start Craving</button>
+            <button id="stopCravingBtn" class="btn large outline" disabled>Stop</button>
+            <div id="cravingTimer" class="craving-timer" aria-live="polite"></div>
           </div>
 
           <div class="manual-row">
@@ -84,6 +93,14 @@
 
           <h3 class="chart-heading mt">Monthly trend (30 days)</h3>
           <canvas id="monthlyChart" height="140"></canvas>
+
+          <div class="awards card-compact mt">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Achievements</strong>
+              <small id="achCount">0</small>
+            </div>
+            <ul id="awardsList" class="awards-list"></ul>
+          </div>
         </div>
       </section>
 
