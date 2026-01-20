@@ -1,4 +1,3 @@
-
 // BreatheFree — features: craving timer (adjustable), achievements w/ metadata,
 // stacked toasts, confetti, analytics + sparkline, streaks (configurable)
 (function () {
@@ -419,7 +418,7 @@
       awardsList.innerHTML = '';
       if (!ach.length) {
         const li = document.createElement('li'); li.textContent = 'No achievements yet — complete a craving to earn one.'; awardsList.appendChild(li); return;
-        }
+      }
       ach.slice(0, 50).forEach(a => {
         const li = document.createElement('li');
         li.textContent = `${a.ts.slice(0, 10)} • ${new Date(a.ts).toLocaleTimeString()}${a.reason ? ` • ${a.reason}` : ''}${a.location ? ` • ${a.location}` : ''}`;
