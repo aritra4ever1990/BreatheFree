@@ -1,26 +1,19 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and Excel/CSV export." />
+  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and export to Excel." />
   <meta name="theme-color" content="#00a8ff" />
 
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.svg" />
-
-  <!-- Styles -->
+  <!-- Favicon + Styles -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="./css/styles.css" />
 
   <!-- Chart.js (for charts) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-
-  <!-- SheetJS (for Excel export) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
-
-  <!-- App script -->
-  <script src="./js/tracker.js"></script>
 </head>
 <body>
   <!-- Bright animated background (decorative only) -->
@@ -44,14 +37,17 @@
 
       <div class="top-actions">
         <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
+
         <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
         <input id="fileImport" type="file" accept=".csv" hidden>
-        <button id="exportBtn" class="btn outline">Export CSV</button>
+
+        <!-- Export to Excel -->
+        <button id="exportExcelBtn" class="btn outline">Export Excel</button>
       </div>
     </header>
 
     <main class="main">
-      <!-- ===== Top row: Smoke Log (left) + Charts (right) ===== -->
+      <!-- Top row: Smoke Log (left) + Charts (right) -->
       <section class="hero">
         <!-- Smoke Log -->
         <div class="hero-left card">
@@ -120,68 +116,65 @@
         </div>
       </section>
 
-      <!-- ===== Middle: Achievements & Craving Analytics (full width) ===== -->
-      <section class="section card">
-        <div class="section-header">
-          <h2>Achievements &amp; Craving analytics</h2>
-        </div>
-
-        <div class="analytics-grid">
-          <div class="analytics-stats">
-            <div>
-              <div class="muted">Resisted today</div>
-              <div id="cravingsToday" class="stat-value">0</div>
-            </div>
-            <div>
-              <div class="muted">Resisted this week</div>
-              <div id="cravingsWeek" class="stat-value">0</div>
-            </div>
-            <div>
-              <div class="muted">Current streak</div>
-              <div id="currentStreak" class="stat-value">0</div>
-            </div>
-            <div>
-              <div class="muted">Best streak</div>
-              <div id="bestStreak" class="stat-value">0</div>
-            </div>
+      <!-- BELOW: Achievements & Craving Analytics (full width) -->
+      <section class="section-row">
+        <div class="card">
+          <div class="ac-header">
+            <h2>Achievements & Craving analytics</h2>
+            <span class="chip">Total <strong id="achCount">0</strong></span>
           </div>
 
-          <div class="sparkline-row mt">
-            <canvas id="sparkline" height="50"></canvas>
+          <div class="analytics">
+            <div class="analytics-row">
+              <div>
+                <div class="muted">Resisted today</div>
+                <div id="cravingsToday" class="stat-value">0</div>
+              </div>
+              <div>
+                <div class="muted">Resisted this week</div>
+                <div id="cravingsWeek" class="stat-value">0</div>
+              </div>
+              <div>
+                <div class="muted">Current streak</div>
+                <div id="currentStreak" class="stat-value">0</div>
+              </div>
+              <div>
+                <div class="muted">Best streak</div>
+                <div id="bestStreak" class="stat-value">0</div>
+              </div>
+            </div>
+            <div class="sparkline-row mt">
+              <canvas id="sparkline" height="50"></canvas>
+            </div>
           </div>
 
           <div class="awards card-compact mt">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <strong>Achievements</strong>
-              <small id="achCount">0</small>
-            </div>
+            <strong>Achievements</strong>
             <ul id="awardsList" class="awards-list"></ul>
           </div>
         </div>
       </section>
 
-      <!-- ===== AI Insights (motivational & actionable) ===== -->
-      <section class="section card ai-card">
-        <div class="section-header">
-          <h2>AI Insights</h2>
-        </div>
-        <ul id="insightsList" class="insights-list" aria-live="polite"></ul>
-        <div class="ai-cta">
-          <button id="aiStart2Min" class="btn primary">Start 2‑min craving</button>
-          <button id="aiStart5Min" class="btn accent">Start 5‑min craving</button>
-          <button id="aiOpenSettings" class="btn outline">Adjust target</button>
+      <!-- AI Insights (motivational, local) -->
+      <section class="section-row">
+        <div class="card ai-card">
+          <div class="ai-header">
+            <h2>AI Insights</h2>
+            <span class="muted">Personalized, private, on-device</span>
+          </div>
+          <ul id="insightsList" class="insights-list"></ul>
         </div>
       </section>
 
-      <!-- ===== Data / Export only (no events list) ===== -->
-      <section class="section card data-utils">
-        <div class="history-header">
-          <h2>Export your data</h2>
-          <div class="history-actions">
-            <button id="exportEventsBtn" class="btn primary">Export Events (Excel)</button>
+      <!-- Data & Export (no events list; only export button) -->
+      <section class="section-row">
+        <div class="card data-card">
+          <div class="data-row">
+            <h2>Data & Export</h2>
+            <button id="exportEventsBtn" class="btn outline">Export Events (Excel)</button>
           </div>
+          <p class="muted" style="margin:6px 0 0">Exports an Excel-compatible file with all your logged events (id, timestamp, date, hour).</p>
         </div>
-        <p class="muted small-note">Exports all logged events to an Excel (.xlsx) file. CSV export is also available from the top bar.</p>
       </section>
     </main>
 
@@ -256,5 +249,8 @@
 
   <!-- Toast container (stacked toasts) -->
   <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- App script -->
+  <script src="./js/tracker.js" defer></script>
 </body>
 </html>
