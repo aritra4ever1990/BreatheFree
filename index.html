@@ -4,20 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and CSV/Excel export." />
+  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and Excel export." />
   <meta name="theme-color" content="#00a8ff" />
 
   <!-- Favicon -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="/css/styles.css" />
 
   <!-- Chart.js (for charts) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- SheetJS (for real .xlsx export) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- App script (deferred) -->
-  <script src="./js/tracker.js" defer></script>
+  <!-- App script -->
+  <script src="/js/tracker.js" defer></script>
 </head>
 <body>
   <!-- Bright animated background (decorative only) -->
@@ -43,15 +45,15 @@
         <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
         <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
         <input id="fileImport" type="file" accept=".csv" hidden>
-        <button id="exportBtn" class="btn outline">Export CSV</button>
+        <button id="exportBtn" class="btn outline">Export Excel</button>
       </div>
     </header>
 
+    <!-- ===== Top content: smoke log (left) + charts (right) ===== -->
     <main class="main">
-      <!-- === Top row: Smoke log (left) + Charts (right) === -->
       <section class="hero">
         <!-- Smoke log -->
-        <div class="hero-left card" aria-label="Smoke log">
+        <div class="hero-left card">
           <div class="date-row">
             <label for="dateInput">Date</label>
             <input id="dateInput" type="date" />
@@ -108,7 +110,7 @@
         </div>
 
         <!-- Charts -->
-        <div class="hero-right card" aria-label="Charts">
+        <div class="hero-right card">
           <h3 class="chart-heading">Progress (last 7 days)</h3>
           <canvas id="weeklyChart" height="140"></canvas>
 
@@ -117,66 +119,61 @@
         </div>
       </section>
 
-      <!-- === AI Insights (motivation) === -->
-      <section class="insights card" aria-label="AI insights">
-        <div class="section-header">
-          <h2>AI Insights (local)</h2>
-          <button id="refreshInsightsBtn" class="btn outline">Refresh insights</button>
-        </div>
-        <ul id="insightsList" class="insights-list" aria-live="polite"></ul>
-        <p class="muted small-note">Generated on your device from your logs and settings—no data leaves your browser.</p>
-      </section>
-
-      <!-- === Achievements & Craving analytics (separate section) === -->
-      <section class="acn card" aria-label="Achievements and Craving analytics">
-        <div class="acn-grid">
-          <!-- Achievements -->
-          <div class="acn-col">
-            <div class="section-header">
-              <h2>Achievements</h2>
-              <small id="achCount" class="pill">0</small>
-            </div>
+      <!-- ===== NEW: Achievements & Craving analytics card (separate section) ===== -->
+      <section class="card">
+        <div class="dual-columns">
+          <div>
+            <h3>Achievements</h3>
             <ul id="awardsList" class="awards-list"></ul>
           </div>
+          <div>
+            <h3>Craving analytics</h3>
+            <div class="analytics">
+              <div class="analytics-row">
+                <div>
+                  <div class="muted">Resisted today</div>
+                  <div id="cravingsToday" class="stat-value">0</div>
+                </div>
+                <div>
+                  <div class="muted">Resisted this week</div>
+                  <div id="cravingsWeek" class="stat-value">0</div>
+                </div>
+                <div>
+                  <div class="muted">Current streak</div>
+                  <div id="currentStreak" class="stat-value">0</div>
+                </div>
+                <div>
+                  <div class="muted">Best streak</div>
+                  <div id="bestStreak" class="stat-value">0</div>
+                </div>
+              </div>
 
-          <!-- Analytics -->
-          <div class="acn-col">
-            <div class="section-header">
-              <h2>Craving analytics</h2>
-            </div>
-            <div class="analytics-row">
-              <div>
-                <div class="muted">Resisted today</div>
-                <div id="cravingsToday" class="stat-value">0</div>
+              <div class="sparkline-row mt">
+                <canvas id="sparkline" height="50"></canvas>
               </div>
-              <div>
-                <div class="muted">Resisted this week</div>
-                <div id="cravingsWeek" class="stat-value">0</div>
-              </div>
-              <div>
-                <div class="muted">Current streak</div>
-                <div id="currentStreak" class="stat-value">0</div>
-              </div>
-              <div>
-                <div class="muted">Best streak</div>
-                <div id="bestStreak" class="stat-value">0</div>
-              </div>
-            </div>
-
-            <div class="sparkline-row mt">
-              <canvas id="sparkline" height="50"></canvas>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- === Data export (no recent events list) === -->
-      <section class="data card" aria-label="Data export">
-        <div class="section-header">
-          <h2>Export your data</h2>
+      <!-- ===== NEW: AI Insights card ===== -->
+      <section class="card">
+        <header class="ai-header">
+          <h3>AI insights</h3>
+          <div class="ai-actions">
+            <button id="refreshInsightsBtn" class="btn outline">Refresh insights</button>
+          </div>
+        </header>
+        <ul id="aiInsightsList" class="ai-list"></ul>
+        <div id="aiQuote" class="ai-quote"></div>
+      </section>
+
+      <!-- ===== NEW: Export bar (no events list) ===== -->
+      <section class="card exportbar">
+        <div class="exportbar-inner">
+          <div class="exportbar-text">Download your data anytime.</div>
+          <button id="exportEventsBtn" class="btn primary">Export to Excel</button>
         </div>
-        <p class="muted">Download all your logs as an Excel sheet for backup or sharing.</p>
-        <button id="exportExcelBtn" class="btn primary large">Export Events to Excel (.xls)</button>
       </section>
     </main>
 
