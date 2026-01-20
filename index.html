@@ -1,19 +1,23 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and export to Excel." />
+  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and CSV/Excel export." />
   <meta name="theme-color" content="#00a8ff" />
 
-  <!-- Favicon + Styles -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="./css/styles.css" />
 
-  <!-- Chart.js (for charts) -->
+  <!-- Chart.js (deferred). NOTE: tracker.js checks for window.Chart before using -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+
+  <!-- App script (deferred) -->
+  <script src="./js/tracker.js" defer></script>
 </head>
 <body>
   <!-- Bright animated background (decorative only) -->
@@ -37,17 +41,14 @@
 
       <div class="top-actions">
         <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
-
         <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
         <input id="fileImport" type="file" accept=".csv" hidden>
-
-        <!-- Export to Excel -->
-        <button id="exportExcelBtn" class="btn outline">Export Excel</button>
+        <!-- Removed header Export CSV to avoid duplication per your request -->
       </div>
     </header>
 
     <main class="main">
-      <!-- Top row: Smoke Log (left) + Charts (right) -->
+      <!-- 1) TOP ROW: Smoke Log (left) + Charts (right) -->
       <section class="hero">
         <!-- Smoke Log -->
         <div class="hero-left card">
@@ -113,18 +114,29 @@
 
           <h3 class="chart-heading mt">Monthly trend (30 days)</h3>
           <canvas id="monthlyChart" height="140"></canvas>
+
+          <div class="mt">
+            <h3 class="chart-heading">Hourly Heatmap (last 30 days)</h3>
+            <div id="hourHeatmap" class="heatmap"></div>
+          </div>
         </div>
       </section>
 
-      <!-- BELOW: Achievements & Craving Analytics (full width) -->
-      <section class="section-row">
-        <div class="card">
-          <div class="ac-header">
-            <h2>Achievements & Craving analytics</h2>
-            <span class="chip">Total <strong id="achCount">0</strong></span>
+      <!-- 2) ACHIEVEMENTS + CRAVING ANALYTICS (full width, just below Smoke Log) -->
+      <section class="ach-analytics card">
+        <div class="ach-analytics-header">
+          <h2>Achievements & Craving analytics</h2>
+        </div>
+
+        <div class="ach-analytics-grid">
+          <div class="ach-block">
+            <strong>Achievements</strong>
+            <small id="achCount" class="muted" style="margin-left:6px">0</small>
+            <ul id="awardsList" class="awards-list" aria-live="polite"></ul>
           </div>
 
-          <div class="analytics">
+          <div class="analytics-block">
+            <strong>Craving analytics</strong>
             <div class="analytics-row">
               <div>
                 <div class="muted">Resisted today</div>
@@ -147,33 +159,22 @@
               <canvas id="sparkline" height="50"></canvas>
             </div>
           </div>
-
-          <div class="awards card-compact mt">
-            <strong>Achievements</strong>
-            <ul id="awardsList" class="awards-list"></ul>
-          </div>
         </div>
       </section>
 
-      <!-- AI Insights (motivational, local) -->
-      <section class="section-row">
-        <div class="card ai-card">
-          <div class="ai-header">
-            <h2>AI Insights</h2>
-            <span class="muted">Personalized, private, on-device</span>
-          </div>
-          <ul id="insightsList" class="insights-list"></ul>
+      <!-- 3) AI INSIGHTS (full width) -->
+      <section class="insights card">
+        <div class="insights-header">
+          <h2>AI Insights</h2>
+          <small class="muted">Local-only, based on your logs & settings</small>
         </div>
+        <ul id="insightsList" class="insights-list"></ul>
       </section>
 
-      <!-- Data & Export (no events list; only export button) -->
-      <section class="section-row">
-        <div class="card data-card">
-          <div class="data-row">
-            <h2>Data & Export</h2>
-            <button id="exportEventsBtn" class="btn outline">Export Events (Excel)</button>
-          </div>
-          <p class="muted" style="margin:6px 0 0">Exports an Excel-compatible file with all your logged events (id, timestamp, date, hour).</p>
+      <!-- 4) EXPORT BAR (no events list; one button to export to Excel) -->
+      <section class="exportbar card-compact">
+        <div class="exportbar-inner">
+          <button id="exportExcelBtn" class="btn primary large">Export Events to Excel</button>
         </div>
       </section>
     </main>
@@ -249,8 +250,5 @@
 
   <!-- Toast container (stacked toasts) -->
   <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
-
-  <!-- App script -->
-  <script src="./js/tracker.js" defer></script>
 </body>
 </html>
