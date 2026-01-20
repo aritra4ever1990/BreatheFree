@@ -1,4 +1,3 @@
-/* --- keep your previous styles, with additions for craving & awards --- */
 :root{
   --bg: #f7fbff;
   --card: #ffffff;
@@ -82,6 +81,11 @@ body{
 .awards-list{list-style:none;margin:10px 0 0 0;padding:0;max-height:160px;overflow:auto}
 .awards-list li{padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-bottom:8px}
 
+/* analytics */
+.analytics{margin-top:14px;padding:10px;border-radius:10px}
+.analytics-row{display:flex;gap:18px;align-items:center;margin-top:8px}
+.sparkline-row{margin-top:12px}
+
 /* history */
 .history .history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .events-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -100,6 +104,44 @@ body{
 .form-row{display:flex;flex-direction:column;gap:6px}
 .form-row input{padding:10px;border-radius:8px;border:1px solid #eef6ff}
 
+/* confetti canvas overlay */
+#confetti-canvas {
+  position: fixed;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* toast */
+#toastContainer {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index: 10000;
+  max-width: 360px;
+}
+.toast {
+  background: linear-gradient(180deg,#ffffff,#f8fbff);
+  padding: 12px 14px;
+  border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.08);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-left: 4px solid var(--accent);
+}
+.toast .msg { flex:1; font-size:0.95rem; color:#07122a; }
+.toast .actions { display:flex; gap:8px; }
+.toast .actions button { font-weight:700; border-radius:8px; padding:6px 10px; border:0; cursor:pointer; }
+.toast.btn-small-primary { background:linear-gradient(90deg,var(--accent),#2bb7ff); color:white; }
+.toast.btn-small-outline { background:transparent; border:1px solid rgba(11,17,34,0.06); }
+
+#confetti-canvas { pointer-events:none; }
+
 /* footer */
 .footer{text-align:center;color:var(--muted);margin-top:10px;font-size:0.9rem}
 
@@ -107,4 +149,5 @@ body{
 @media (max-width:980px){
   .hero{flex-direction:column}
   .hero-left{flex-basis:auto}
+  #toastContainer { left: 12px; right: 12px; bottom: 12px; max-width: calc(100% - 24px); }
 }
