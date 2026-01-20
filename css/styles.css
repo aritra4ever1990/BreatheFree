@@ -1,3 +1,4 @@
+/* --- keep your previous styles, with additions for craving & awards --- */
 :root{
   --bg: #f7fbff;
   --card: #ffffff;
@@ -42,6 +43,7 @@ body{
 .btn.circle{width:44px;height:44px;border-radius:12px;padding:0;display:inline-grid;place-items:center;font-size:1rem}
 .btn.outline{background:transparent;border:1px solid rgba(255,255,255,0.18);color:#fff}
 .btn.danger{background:linear-gradient(90deg,#ff7a7a,#ff5f5f);color:#fff}
+.btn.accent{background:linear-gradient(90deg,#7b61ff,#00a8ff);color:#fff;box-shadow:0 10px 28px rgba(123,97,255,0.12)}
 
 /* layout */
 .main{margin-top:18px;display:flex;flex-direction:column;gap:18px}
@@ -57,7 +59,7 @@ body{
 .small-label{color:var(--muted)}
 .money-box{padding:8px;border-radius:10px;background:linear-gradient(180deg,#f8fbff,#ffffff);text-align:right}
 .money-box .muted{font-size:0.8rem;color:var(--muted)}
-.money-amount{font-weight:800;font-size:1.15rem}
+.money-amount{font-weight:800;font-size:1.05rem}
 
 /* controls */
 .controls{display:flex;gap:12px;align-items:center;margin-bottom:12px}
@@ -67,9 +69,18 @@ body{
 .stat-label{font-size:0.8rem;color:var(--muted)}
 .stat-value{font-size:1.05rem;font-weight:700}
 
+/* craving row */
+.craving-row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.craving-timer{font-weight:700;color:var(--accent-3);padding-left:8px}
+
 /* charts */
 .chart-heading{font-weight:700;margin-bottom:8px}
 .mt{margin-top:18px}
+
+/* awards */
+.awards{margin-top:16px;padding:10px;border-radius:10px}
+.awards-list{list-style:none;margin:10px 0 0 0;padding:0;max-height:160px;overflow:auto}
+.awards-list li{padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-bottom:8px}
 
 /* history */
 .history .history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
