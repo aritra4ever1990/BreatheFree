@@ -1,22 +1,22 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and CSV/Excel export." />
+  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and export to Excel." />
   <meta name="theme-color" content="#00a8ff" />
 
   <!-- Favicon -->
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 
   <!-- Styles -->
   <link rel="stylesheet" href="./css/styles.css" />
 
-  <!-- Chart.js (deferred). NOTE: tracker.js checks for window.Chart before using -->
+  <!-- Chart.js (deferred, loads before app script) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-
-  <!-- App script (deferred) -->
+  <!-- App script -->
   <script src="./js/tracker.js" defer></script>
 </head>
 <body>
@@ -43,14 +43,14 @@
         <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
         <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
         <input id="fileImport" type="file" accept=".csv" hidden>
-        <!-- Removed header Export CSV to avoid duplication per your request -->
+        <button id="exportBtn" class="btn outline">Export CSV</button>
       </div>
     </header>
 
+    <!-- ====== TOP GRID ====== -->
     <main class="main">
-      <!-- 1) TOP ROW: Smoke Log (left) + Charts (right) -->
       <section class="hero">
-        <!-- Smoke Log -->
+        <!-- Left: Smoke Log -->
         <div class="hero-left card">
           <div class="date-row">
             <label for="dateInput">Date</label>
@@ -107,7 +107,7 @@
           </div>
         </div>
 
-        <!-- Charts -->
+        <!-- Right: Charts -->
         <div class="hero-right card">
           <h3 class="chart-heading">Progress (last 7 days)</h3>
           <canvas id="weeklyChart" height="140"></canvas>
@@ -115,27 +115,24 @@
           <h3 class="chart-heading mt">Monthly trend (30 days)</h3>
           <canvas id="monthlyChart" height="140"></canvas>
 
-          <div class="mt">
+          <div class="card mt">
             <h3 class="chart-heading">Hourly Heatmap (last 30 days)</h3>
-            <div id="hourHeatmap" class="heatmap"></div>
+            <div id="hourHeatmap" class="heatmap" aria-label="Hourly heatmap"></div>
           </div>
         </div>
       </section>
 
-      <!-- 2) ACHIEVEMENTS + CRAVING ANALYTICS (full width, just below Smoke Log) -->
-      <section class="ach-analytics card">
-        <div class="ach-analytics-header">
-          <h2>Achievements & Craving analytics</h2>
-        </div>
+      <!-- ====== NEW: Achievements + Craving analytics (full width, below smoke log) ====== -->
+      <section class="card section-wide">
+        <h2 class="section-title">Achievements &amp; Craving analytics</h2>
 
-        <div class="ach-analytics-grid">
-          <div class="ach-block">
-            <strong>Achievements</strong>
-            <small id="achCount" class="muted" style="margin-left:6px">0</small>
-            <ul id="awardsList" class="awards-list" aria-live="polite"></ul>
+        <div class="two-col">
+          <div>
+            <strong>Achievements</strong> <small id="achCount">0</small>
+            <ul id="awardsList" class="awards-list"></ul>
           </div>
 
-          <div class="analytics-block">
+          <div class="analytics card-compact">
             <strong>Craving analytics</strong>
             <div class="analytics-row">
               <div>
@@ -155,6 +152,7 @@
                 <div id="bestStreak" class="stat-value">0</div>
               </div>
             </div>
+
             <div class="sparkline-row mt">
               <canvas id="sparkline" height="50"></canvas>
             </div>
@@ -162,19 +160,24 @@
         </div>
       </section>
 
-      <!-- 3) AI INSIGHTS (full width) -->
-      <section class="insights card">
-        <div class="insights-header">
-          <h2>AI Insights</h2>
-          <small class="muted">Local-only, based on your logs & settings</small>
+      <!-- ====== NEW: AI Insights (motivational & actionable) ====== -->
+      <section class="card section-wide">
+        <div class="section-head">
+          <h2 class="section-title">AI Insights</h2>
+          <div class="section-actions">
+            <button id="refreshInsightsBtn" class="btn outline">Refresh tips</button>
+          </div>
         </div>
-        <ul id="insightsList" class="insights-list"></ul>
+        <ul id="insightsList" class="insights-list" aria-live="polite"></ul>
       </section>
 
-      <!-- 4) EXPORT BAR (no events list; one button to export to Excel) -->
-      <section class="exportbar card-compact">
-        <div class="exportbar-inner">
-          <button id="exportExcelBtn" class="btn primary large">Export Events to Excel</button>
+      <!-- ====== Only Export button (no recent events list) ====== -->
+      <section class="card section-wide export-only">
+        <div class="export-row">
+          <div class="muted">Download your logs</div>
+          <div class="actions">
+            <button id="exportEventsBtn" class="btn primary">Export Events (Excel)</button>
+          </div>
         </div>
       </section>
     </main>
@@ -252,3 +255,4 @@
   <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 </body>
 </html>
+``
