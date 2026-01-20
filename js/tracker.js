@@ -1,18 +1,19 @@
-// BreatheFree — robust UI event wiring + settings + charts
+// BreatheFree — enhanced with Craving timer, achievements, saved calculation
 (function () {
   'use strict';
 
-  // run only after DOM ready
   document.addEventListener('DOMContentLoaded', () => {
-    // local keys
+    // Storage keys
     const EVENTS_KEY = 'breathefree:events';
     const SETTINGS_KEY = 'breathefree:settings';
     const UNDO_KEY = 'breathefree:undo';
+    const ACH_KEY = 'breathefree:achievements';
+    const CRAVING_KEY = 'breathefree:craving'; // stores { endTs: number | null }
 
-    // safe query helper
-    const $ = (id) => document.getElementById(id);
+    // DOM helpers
+    const $ = id => document.getElementById(id);
 
-    // DOM refs (may be null if markup changed; code guards handle that)
+    // Elements
     const dateInput = $('dateInput');
     const countNumber = $('countNumber');
     const decrementBtn = $('decrementBtn');
@@ -30,49 +31,55 @@
     const avg30El = $('avg30');
     const totalLoggedEl = $('totalLogged');
     const moneySpentEl = $('moneySpent');
+    const savedAmountEl = $('savedAmount');
 
+    const startCravingBtn = $('startCravingBtn');
+    const stopCravingBtn = $('stopCravingBtn');
+    const cravingTimerEl = $('cravingTimer');
+
+    const awardsList = $('awardsList');
+    const achCount = $('achCount');
+
+    // charts
     const weeklyCanvas = $('weeklyChart');
     const monthlyCanvas = $('monthlyChart');
-
-    // settings modal elements
-    const openSettingsBtn = $('openSettingsBtn');
-    const settingsModal = $('settingsModal');
-    const closeSettingsBtn = $('closeSettingsBtn');
-    const saveSettingsBtn = $('saveSettingsBtn');
-    const resetSettingsBtn = $('resetSettingsBtn');
-    const cigPriceInput = $('cigPrice');
-    const dailyTargetInput = $('dailyTarget');
-    const currencyInput = $('currency');
-
-    // Chart variables
     let weeklyChart = null;
     let monthlyChart = null;
 
-    // storage helpers
+    // Storage helpers
     function loadEvents() {
       try {
         const raw = localStorage.getItem(EVENTS_KEY);
         return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        console.error('loadEvents error', e);
-        return [];
-      }
+      } catch (e) { console.error(e); return []; }
     }
-    function saveEvents(events) {
-      localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
-    }
+    function saveEvents(events) { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); }
+
     function loadSettings() {
       try {
         const raw = localStorage.getItem(SETTINGS_KEY);
         if (!raw) return { price: 0.5, dailyTarget: 10, currency: '$' };
         return Object.assign({ price: 0.5, dailyTarget: 10, currency: '$' }, JSON.parse(raw));
-      } catch (e) {
-        return { price: 0.5, dailyTarget: 10, currency: '$' };
-      }
+      } catch (e) { return { price: 0.5, dailyTarget: 10, currency: '$' }; }
     }
-    function saveSettings(settings) {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+    function loadAchievements() {
+      try {
+        const raw = localStorage.getItem(ACH_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) { return []; }
     }
+    function saveAchievements(a) { localStorage.setItem(ACH_KEY, JSON.stringify(a)); }
+
+    function loadCraving() {
+      try {
+        const raw = localStorage.getItem(CRAVING_KEY);
+        return raw ? JSON.parse(raw) : { endTs: null };
+      } catch (e) { return { endTs: null }; }
+    }
+    function saveCraving(c) { localStorage.setItem(CRAVING_KEY, JSON.stringify(c)); }
+
     function pushUndo(payload) {
       localStorage.setItem(UNDO_KEY, JSON.stringify({ payload, ts: new Date().toISOString() }));
       if (undoBtn) undoBtn.disabled = false;
@@ -85,12 +92,14 @@
       return JSON.parse(raw).payload;
     }
 
-    function uid() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
-    // Add a new event (timestamp ISO string)
+    // Add event (guarded by craving)
     function addEvent(ts = new Date().toISOString()) {
+      if (isCravingActive()) {
+        alert('Craving in progress — please wait until the timer finishes or stop it before logging a smoke.');
+        return;
+      }
       const events = loadEvents();
       events.push({ id: uid(), ts });
       events.sort((a, b) => new Date(b.ts) - new Date(a.ts));
@@ -98,7 +107,7 @@
       render();
     }
 
-    // Remove event by id
+    // Remove event
     function removeEvent(id) {
       const events = loadEvents();
       const idx = events.findIndex(e => e.id === id);
@@ -109,7 +118,6 @@
       render();
     }
 
-    // Clear all events
     function clearAll() {
       const events = loadEvents();
       if (!events.length) return;
@@ -118,7 +126,7 @@
       render();
     }
 
-    // Import CSV (simple parser)
+    // CSV import/export (same behavior as before)
     function importCSV(file) {
       if (!file) return;
       const reader = new FileReader();
@@ -126,13 +134,11 @@
         const text = e.target.result;
         const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         if (!lines.length) return alert('Empty or invalid CSV.');
-        // remove optional header row if detected
         const first = lines[0].toLowerCase();
         if (first.includes('timestamp') || first.includes('id')) lines.shift();
         const events = loadEvents();
         let count = 0;
         lines.forEach(line => {
-          // naive parse: split by comma, take second col as timestamp or first
           const cols = line.split(',');
           const ts = (cols[1] || cols[0] || '').replace(/^"|"$/g, '');
           const d = new Date(ts);
@@ -149,7 +155,6 @@
       reader.readAsText(file);
     }
 
-    // Export CSV
     function exportCSV() {
       const events = loadEvents();
       const rows = [['id','timestamp','date']];
@@ -157,17 +162,112 @@
       const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'breathefree-events.csv';
-      a.click();
-      URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = 'breathefree-events.csv'; a.click(); URL.revokeObjectURL(url);
     }
 
-    // helpers: iso date string and counts
-    function isoDate(d = new Date()) {
-      return d.toISOString().slice(0,10);
+    // Craving helpers
+    const CRAVING_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+    let cravingInterval = null;
+
+    function isCravingActive() {
+      const c = loadCraving();
+      return c && c.endTs && (new Date(c.endTs).getTime() > Date.now());
     }
+
+    function startCraving() {
+      // set end timestamp
+      const endTs = Date.now() + CRAVING_DURATION_MS;
+      saveCraving({ endTs });
+      updateCravingUI();
+      // interval tick
+      if (cravingInterval) clearInterval(cravingInterval);
+      cravingInterval = setInterval(() => {
+        updateCravingUI();
+        if (!isCravingActive()) {
+          // completed
+          clearInterval(cravingInterval);
+          cravingInterval = null;
+          completeCraving();
+        }
+      }, 1000);
+    }
+
+    function stopCraving() {
+      // cancel timer
+      saveCraving({ endTs: null });
+      if (cravingInterval) { clearInterval(cravingInterval); cravingInterval = null; }
+      updateCravingUI();
+    }
+
+    function remainingMs() {
+      const c = loadCraving();
+      if (!c || !c.endTs) return 0;
+      return Math.max(0, new Date(c.endTs).getTime() - Date.now());
+    }
+
+    function formatMMSS(ms) {
+      const totalSec = Math.ceil(ms / 1000);
+      const mm = Math.floor(totalSec / 60);
+      const ss = totalSec % 60;
+      return `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+    }
+
+    function completeCraving() {
+      // add an achievement and compute saved (one cigarette price)
+      const ach = loadAchievements();
+      const now = new Date().toISOString();
+      ach.unshift({ id: uid(), ts: now });
+      saveAchievements(ach);
+
+      // clear craving
+      saveCraving({ endTs: null });
+      updateCravingUI();
+      render(); // will update saved amounts and awards
+
+      // feedback
+      alert('Great job — you completed a 5-minute craving! Achievement unlocked and one cigarette worth saved.');
+    }
+
+    function updateCravingUI() {
+      const active = isCravingActive();
+      // show timer
+      if (cravingTimerEl) {
+        if (active) {
+          cravingTimerEl.textContent = 'Remaining: ' + formatMMSS(remainingMs());
+        } else {
+          cravingTimerEl.textContent = '';
+        }
+      }
+      // toggle buttons
+      const disableLogging = active;
+      [addNowBtn, incrementBtn, addAtBtn].forEach(el => { if (el) el.disabled = disableLogging; });
+      if (startCravingBtn) startCravingBtn.disabled = active;
+      if (stopCravingBtn) stopCravingBtn.disabled = !active;
+      // visual state
+      if (startCravingBtn) startCravingBtn.classList.toggle('disabled', active);
+    }
+
+    // Achievements UI
+    function renderAchievements() {
+      const ach = loadAchievements();
+      if (achCount) achCount.textContent = ach.length;
+      if (!awardsList) return;
+      awardsList.innerHTML = '';
+      if (!ach.length) {
+        const li = document.createElement('li'); li.textContent = 'No achievements yet — complete a 5-min craving to earn one.';
+        awardsList.appendChild(li);
+        return;
+      }
+      ach.slice(0, 50).forEach(a => {
+        const li = document.createElement('li');
+        li.textContent = `${a.ts.slice(0,10)} — ${new Date(a.ts).toLocaleTimeString()}`;
+        awardsList.appendChild(li);
+      });
+    }
+
+    // Stats & charts (same as before, plus saved)
+    function isoDate(d = new Date()) { return d.toISOString().slice(0,10); }
+
     function countsLastNDays(n) {
       const events = loadEvents();
       const counts = {};
@@ -182,7 +282,6 @@
       return counts;
     }
 
-    // update charts and stats
     function updateStatsAndCharts() {
       const settings = loadSettings();
       const counts7 = countsLastNDays(7);
@@ -202,8 +301,14 @@
       const events = loadEvents();
       if (totalLoggedEl) totalLoggedEl.textContent = events.length;
 
-      const money = (events.length * (parseFloat(settings.price) || 0));
-      if (moneySpentEl) moneySpentEl.textContent = `${settings.currency || '$'}${money.toFixed(2)}`;
+      // money spent
+      const moneySpent = (events.length * (parseFloat(settings.price) || 0));
+      if (moneySpentEl) moneySpentEl.textContent = `${settings.currency || '$'}${moneySpent.toFixed(2)}`;
+
+      // saved — computed from achievements count * price
+      const ach = loadAchievements();
+      const saved = (ach.length * (parseFloat(settings.price) || 0));
+      if (savedAmountEl) savedAmountEl.textContent = `${settings.currency || '$'}${saved.toFixed(2)}`;
 
       // weekly chart
       if (weeklyCanvas) {
@@ -211,7 +316,7 @@
         const data7 = [];
         for (let i = 6; i >= 0; i--) {
           const day = isoDate(new Date(Date.now() - i * 24 * 3600 * 1000));
-          labels7.push(day.slice(5)); // MM-DD
+          labels7.push(day.slice(5));
           data7.push(counts7[day] || 0);
         }
         const target = parseFloat(settings.dailyTarget) || 0;
@@ -241,14 +346,12 @@
       if (monthlyCanvas) {
         const labels30 = [];
         const data30 = [];
-        // compute counts30 once
         const counts30map = countsLastNDays(30);
         for (let i = 29; i >= 0; i--) {
           const day = isoDate(new Date(Date.now() - i * 24 * 3600 * 1000));
           labels30.push(day);
           data30.push(counts30map[day] || 0);
         }
-
         if (!monthlyChart) {
           monthlyChart = new Chart(monthlyCanvas.getContext('2d'), {
             type: 'line',
@@ -263,7 +366,7 @@
       }
     }
 
-    // render event list
+    // events list
     function renderEventsList() {
       if (!eventsList) return;
       const events = loadEvents();
@@ -296,20 +399,60 @@
       });
     }
 
+    // render achievements
+    function renderAchievements() {
+      const ach = loadAchievements();
+      if (achCount) achCount.textContent = ach.length;
+      if (!awardsList) return;
+      awardsList.innerHTML = '';
+      if (!ach.length) {
+        const li = document.createElement('li'); li.textContent = 'No achievements yet — complete a 5-min craving to earn one.';
+        awardsList.appendChild(li);
+        return;
+      }
+      ach.slice(0,50).forEach(a => {
+        const li = document.createElement('li');
+        li.textContent = `${a.ts.slice(0,10)} — ${new Date(a.ts).toLocaleTimeString()}`;
+        awardsList.appendChild(li);
+      });
+    }
+
+    // update UI and charts
+    function updateCravingUI() {
+      const active = isCravingActive();
+      if (cravingTimerEl) {
+        if (active) cravingTimerEl.textContent = 'Remaining: ' + formatMMSS(Math.max(0, loadCraving().endTs - Date.now()));
+        else cravingTimerEl.textContent = '';
+      }
+      // disable logging while active
+      [addNowBtn, incrementBtn, addAtBtn].forEach(el => { if (el) el.disabled = active; });
+      if (startCravingBtn) startCravingBtn.disabled = active;
+      if (stopCravingBtn) stopCravingBtn.disabled = !active;
+    }
+
+    // helper to format mm:ss
+    function formatMMSS(ms) {
+      const total = Math.ceil(ms / 1000);
+      const mm = Math.floor(total / 60);
+      const ss = total % 60;
+      return `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+    }
+
     // master render
     function render() {
-      // date default
+      // default date
       if (dateInput) dateInput.value = isoDate();
       renderEventsList();
+      renderAchievements();
       updateStatsAndCharts();
+      updateCravingUI();
       if (undoBtn) undoBtn.disabled = !localStorage.getItem(UNDO_KEY);
     }
 
-    // attach handlers (guarded)
+    // event wiring
     if (addNowBtn) addNowBtn.addEventListener('click', () => addEvent(new Date().toISOString()));
     if (incrementBtn) incrementBtn.addEventListener('click', () => addEvent(new Date().toISOString()));
     if (decrementBtn) decrementBtn.addEventListener('click', () => {
-      // remove most recent event of selected date (default: today)
       const events = loadEvents();
       const date = dateInput ? dateInput.value || isoDate() : isoDate();
       const match = events.find(e => e.ts.slice(0,10) === date);
@@ -354,17 +497,34 @@
       }
     });
 
-    // settings modal
+    // Start / Stop craving
+    if (startCravingBtn) startCravingBtn.addEventListener('click', () => {
+      if (isCravingActive()) return;
+      startCraving();
+    });
+    if (stopCravingBtn) stopCravingBtn.addEventListener('click', () => {
+      if (!isCravingActive()) return;
+      if (confirm('Stop craving early? You will not earn the achievement.')) stopCraving();
+    });
+
+    // settings modal wiring (re-using existing inputs if available)
+    const openSettingsBtn = $('openSettingsBtn');
+    const settingsModal = $('settingsModal');
+    const closeSettingsBtn = $('closeSettingsBtn');
+    const saveSettingsBtn = $('saveSettingsBtn');
+    const resetSettingsBtn = $('resetSettingsBtn');
+    const cigPriceInput = $('cigPrice');
+    const dailyTargetInput = $('dailyTarget');
+    const currencyInput = $('currency');
+
     if (openSettingsBtn) openSettingsBtn.addEventListener('click', () => {
       const s = loadSettings();
       if (cigPriceInput) cigPriceInput.value = s.price;
       if (dailyTargetInput) dailyTargetInput.value = s.dailyTarget;
       if (currencyInput) currencyInput.value = s.currency;
-      if (settingsModal) { settingsModal.classList.remove('hidden'); settingsModal.setAttribute('aria-hidden','false'); }
+      if (settingsModal) { settingsModal.classList.remove('hidden'); settingsModal.setAttribute('aria-hidden', 'false'); }
     });
-    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => {
-      if (settingsModal) { settingsModal.classList.add('hidden'); settingsModal.setAttribute('aria-hidden','true'); }
-    });
+    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => { if (settingsModal) { settingsModal.classList.add('hidden'); settingsModal.setAttribute('aria-hidden','true'); } });
     if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', () => {
       const settings = {
         price: parseFloat(cigPriceInput && cigPriceInput.value) || 0,
@@ -381,18 +541,31 @@
       render();
     });
 
-    // keyboard shortcuts: N log now, U undo, E export
+    // keyboard shortcuts
     window.addEventListener('keydown', (e) => {
-      if ((e.key === 'N' || e.key === 'n') && document.activeElement.tagName !== 'INPUT') {
-        addEvent(new Date().toISOString());
-      }
-      if ((e.key === 'U' || e.key === 'u') && !(!undoBtn || undoBtn.disabled)) {
-        undoBtn && undoBtn.click();
-      }
-      if ((e.key === 'E' || e.key === 'e') && document.activeElement.tagName !== 'INPUT') {
-        exportBtn && exportBtn.click();
-      }
+      if ((e.key === 'N' || e.key === 'n') && document.activeElement.tagName !== 'INPUT') addEvent(new Date().toISOString());
+      if ((e.key === 'U' || e.key === 'u') && (!undoBtn || !undoBtn.disabled)) undoBtn && undoBtn.click();
+      if ((e.key === 'E' || e.key === 'e') && document.activeElement.tagName !== 'INPUT') exportBtn && exportBtn.click();
     });
+
+    // Timer resume on load (if craving active)
+    (function resumeCravingIfActive() {
+      const c = loadCraving();
+      if (c && c.endTs && (new Date(c.endTs).getTime() > Date.now())) {
+        // resume interval
+        if (cravingInterval) clearInterval(cravingInterval);
+        cravingInterval = setInterval(() => {
+          updateCravingUI();
+          if (!isCravingActive()) {
+            clearInterval(cravingInterval);
+            cravingInterval = null;
+            completeCraving();
+          }
+        }, 1000);
+      } else {
+        saveCraving({ endTs: null });
+      }
+    })();
 
     // initial render
     render();
