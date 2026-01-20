@@ -148,3 +148,11 @@
     }
 
     // CSV
+    function importCSVLove the direction! I’ve implemented all three changes and packed them into **fully replaceable files** you can drop into your repo (root level):
+
+- ✅ **Remove Recent events list** and show only an **Export to Excel** button (creates a real Excel-compatible `.xls` file—no extra libs).
+- ✅ **Add an “AI Insights (local)” section** with motivating, data‑driven insights based on your logs, streaks, and savings (all computed locally—no network/AI calls).
+- ✅ **Move “Achievements & Craving analytics” into its own section** below the smoke log for a balanced layout.
+- ✅ Keep the **animated background** and **larger, tappable buttons**.
+
+> **Files to paste** (root):
