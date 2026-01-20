@@ -5,20 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
 
-  <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- Chart.js -->
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <img src="favicon.svg" class="logo" alt="" aria-hidden="true">
+        <img src="favicon.svg" class="logo" alt="" />
         <div class="title-wrap">
           <h1>BreatheFree</h1>
-          <p class="subtitle">Track your daily cigarette intake — locally</p>
+          <p class="subtitle">Track your daily cigarette intake — stored locally</p>
         </div>
       </div>
 
@@ -39,14 +38,21 @@
           </div>
 
           <div class="counter-display">
-            <div class="big-count" id="countNumber">0</div>
-            <div class="small-label">Cigarettes today</div>
+            <div>
+              <div class="big-count" id="countNumber">0</div>
+              <div class="small-label">Cigarettes today</div>
+            </div>
+
+            <div class="money-box card-compact">
+              <div class="muted">Money spent</div>
+              <div id="moneySpent" class="money-amount">$0.00</div>
+            </div>
           </div>
 
           <div class="controls">
-            <button id="decrementBtn" class="btn large ghost">−</button>
+            <button id="decrementBtn" class="btn large secondary">−</button>
             <button id="addNowBtn" class="btn large primary">Log Now</button>
-            <button id="incrementBtn" class="btn large ghost">+</button>
+            <button id="incrementBtn" class="btn large secondary">+</button>
           </div>
 
           <div class="manual-row">
@@ -69,19 +75,15 @@
               <div class="stat-label">Total logged</div>
               <div class="stat-value" id="totalLogged">0</div>
             </div>
-            <div>
-              <div class="stat-label">Money spent</div>
-              <div class="stat-value" id="moneySpent">0</div>
-            </div>
           </div>
         </div>
 
         <div class="hero-right card">
-          <h3>Progress (last 7 days)</h3>
-          <canvas id="weeklyChart" height="160"></canvas>
+          <h3 class="chart-heading">Progress (last 7 days)</h3>
+          <canvas id="weeklyChart" height="140"></canvas>
 
-          <h3 class="mt">Monthly trend (30 days)</h3>
-          <canvas id="monthlyChart" height="160"></canvas>
+          <h3 class="chart-heading mt">Monthly trend (30 days)</h3>
+          <canvas id="monthlyChart" height="140"></canvas>
         </div>
       </section>
 
