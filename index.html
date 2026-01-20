@@ -1,22 +1,23 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and CSV import/export." />
+  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and CSV/Excel export." />
   <meta name="theme-color" content="#00a8ff" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="./js/favicon.svg" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="./css/styles.css" />
 
   <!-- Chart.js (for charts) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-  <!-- App script -->
+  <!-- App script (deferred) -->
   <script src="./js/tracker.js" defer></script>
 </head>
 <body>
@@ -32,7 +33,7 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <img src="./favicon.svg" class="logo" alt="" />
+        <img src="favicon.svg" class="logo" alt="" />
         <div class="title-wrap">
           <h1>BreatheFree</h1>
           <p class="subtitle">Track your daily cigarette intake — stored locally</p>
@@ -48,8 +49,10 @@
     </header>
 
     <main class="main">
+      <!-- === Top row: Smoke log (left) + Charts (right) === -->
       <section class="hero">
-        <div class="hero-left card">
+        <!-- Smoke log -->
+        <div class="hero-left card" aria-label="Smoke log">
           <div class="date-row">
             <label for="dateInput">Date</label>
             <input id="dateInput" type="date" />
@@ -105,23 +108,43 @@
           </div>
         </div>
 
-        <div class="hero-right card">
+        <!-- Charts -->
+        <div class="hero-right card" aria-label="Charts">
           <h3 class="chart-heading">Progress (last 7 days)</h3>
           <canvas id="weeklyChart" height="140"></canvas>
 
           <h3 class="chart-heading mt">Monthly trend (30 days)</h3>
           <canvas id="monthlyChart" height="140"></canvas>
+        </div>
+      </section>
 
-          <div class="awards card-compact mt">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <strong>Achievements</strong>
-              <small id="achCount">0</small>
+      <!-- === AI Insights (motivation) === -->
+      <section class="insights card" aria-label="AI insights">
+        <div class="section-header">
+          <h2>AI Insights (local)</h2>
+          <button id="refreshInsightsBtn" class="btn outline">Refresh insights</button>
+        </div>
+        <ul id="insightsList" class="insights-list" aria-live="polite"></ul>
+        <p class="muted small-note">Generated on your device from your logs and settings—no data leaves your browser.</p>
+      </section>
+
+      <!-- === Achievements & Craving analytics (separate section) === -->
+      <section class="acn card" aria-label="Achievements and Craving analytics">
+        <div class="acn-grid">
+          <!-- Achievements -->
+          <div class="acn-col">
+            <div class="section-header">
+              <h2>Achievements</h2>
+              <small id="achCount" class="pill">0</small>
             </div>
             <ul id="awardsList" class="awards-list"></ul>
           </div>
 
-          <div class="analytics card-compact mt">
-            <strong>Craving analytics</strong>
+          <!-- Analytics -->
+          <div class="acn-col">
+            <div class="section-header">
+              <h2>Craving analytics</h2>
+            </div>
             <div class="analytics-row">
               <div>
                 <div class="muted">Resisted today</div>
@@ -145,18 +168,16 @@
               <canvas id="sparkline" height="50"></canvas>
             </div>
           </div>
-
         </div>
       </section>
 
-      <section class="history card">
-        <div class="history-header">
-          <h2>Recent events</h2>
-          <div class="history-actions">
-            <button id="exportEventsBtn" class="btn outline">Export Events</button>
-          </div>
+      <!-- === Data export (no recent events list) === -->
+      <section class="data card" aria-label="Data export">
+        <div class="section-header">
+          <h2>Export your data</h2>
         </div>
-        <ul id="eventsList" class="events-list" aria-live="polite"></ul>
+        <p class="muted">Download all your logs as an Excel sheet for backup or sharing.</p>
+        <button id="exportExcelBtn" class="btn primary large">Export Events to Excel (.xls)</button>
       </section>
     </main>
 
