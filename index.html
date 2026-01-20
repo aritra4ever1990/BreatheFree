@@ -7,7 +7,7 @@
 
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- Chart.js (CDN) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -57,7 +57,7 @@
             <button id="incrementBtn" class="btn large secondary">+</button>
           </div>
 
-          <!-- Craving controls added here -->
+          <!-- Craving controls -->
           <div class="craving-row">
             <button id="startCravingBtn" class="btn large accent">Start Craving</button>
             <button id="stopCravingBtn" class="btn large outline" disabled>Stop</button>
@@ -101,6 +101,33 @@
             </div>
             <ul id="awardsList" class="awards-list"></ul>
           </div>
+
+          <div class="analytics card-compact mt">
+            <strong>Craving analytics</strong>
+            <div class="analytics-row">
+              <div>
+                <div class="muted">Resisted today</div>
+                <div id="cravingsToday" class="stat-value">0</div>
+              </div>
+              <div>
+                <div class="muted">Resisted this week</div>
+                <div id="cravingsWeek" class="stat-value">0</div>
+              </div>
+              <div>
+                <div class="muted">Current streak</div>
+                <div id="currentStreak" class="stat-value">0</div>
+              </div>
+              <div>
+                <div class="muted">Best streak</div>
+                <div id="bestStreak" class="stat-value">0</div>
+              </div>
+            </div>
+
+            <div class="sparkline-row mt">
+              <canvas id="sparkline" height="50"></canvas>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -116,6 +143,30 @@
     </main>
 
     <footer class="footer">Stored locally in your browser • No external servers</footer>
+  </div>
+
+  <!-- Achievement details modal -->
+  <div id="achModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <header class="modal-header">
+        <h3>Edit achievement</h3>
+        <button id="closeAchModal" class="btn circle">✕</button>
+      </header>
+      <div class="modal-body">
+        <div class="form-row">
+          <label for="achReason">Reason (optional)</label>
+          <input id="achReason" type="text" placeholder="e.g. stress, after-meal" />
+        </div>
+        <div class="form-row">
+          <label for="achLocation">Location (optional)</label>
+          <input id="achLocation" type="text" placeholder="e.g. home, bar" />
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button id="saveAchBtn" class="btn primary">Save</button>
+        <button id="cancelAchBtn" class="btn outline">Cancel</button>
+      </footer>
+    </div>
   </div>
 
   <!-- Settings Modal -->
@@ -141,6 +192,16 @@
           <label for="currency">Currency symbol</label>
           <input id="currency" type="text" maxlength="4" placeholder="$" />
         </div>
+
+        <div class="form-row">
+          <label for="cravingDuration">Craving duration (minutes)</label>
+          <input id="cravingDuration" type="number" min="1" max="60" step="1" placeholder="5" />
+        </div>
+
+        <div class="form-row">
+          <label for="streakTarget">Streak target (days for reward)</label>
+          <input id="streakTarget" type="number" min="1" max="365" step="1" placeholder="7" />
+        </div>
       </div>
 
       <footer class="modal-footer">
@@ -149,6 +210,9 @@
       </footer>
     </div>
   </div>
+
+  <!-- Toast container (stacked toasts) -->
+  <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 
   <script src="js/tracker.js" defer></script>
 </body>
