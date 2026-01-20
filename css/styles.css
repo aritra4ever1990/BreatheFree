@@ -1,3 +1,4 @@
+
 :root{
   --bg: #f7fbff;
   --card: #ffffff;
@@ -23,7 +24,7 @@ body{
   overflow-x:hidden;
 }
 
-/* ===== Animated Background ===== */
+/* ===== Animated Background (decorative) ===== */
 .bg-anim{
   position: fixed;
   inset: 0;
@@ -31,7 +32,8 @@ body{
   pointer-events: none;
   overflow: hidden;
   filter: blur(40px) saturate(120%);
-  opacity: 0.5;
+  opacity: 0.42;
+  mix-blend-mode: normal;
 }
 .bg-anim .blob{
   position: absolute;
@@ -67,7 +69,7 @@ body{
 
 .top-actions{display:flex;gap:10px;align-items:center}
 
-/* ===== Buttons (bigger & tappable) ===== */
+/* ===== Buttons (bigger & more tappable) ===== */
 .btn{
   padding:12px 18px;border-radius:12px;border:0;background:var(--glass);cursor:pointer;font-weight:800;color:#07122a;
   box-shadow: 0 6px 18px rgba(2,6,23,0.04);
@@ -82,12 +84,13 @@ body{
 .btn.huge{padding:16px 26px;font-size:1.15rem;border-radius:14px}
 .btn.circle{width:50px;height:50px;border-radius:14px;padding:0;display:inline-grid;place-items:center;font-size:1.05rem}
 
-/* Outline buttons — readable by default on light backgrounds */
+/* Outline buttons — readable on light backgrounds */
 .btn.outline{
   background:transparent;
   border:1px solid rgba(11,17,34,0.12);
   color:#07122a;
 }
+/* Keep white outline style only in topbar */
 .topbar .btn.outline{
   border:1px solid rgba(255,255,255,0.22);
   color:#fff;
@@ -100,13 +103,6 @@ body{
 .main{margin-top:18px;display:flex;flex-direction:column;gap:18px}
 .hero{display:flex;gap:18px;align-items:flex-start}
 .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);flex:1;backdrop-filter: saturate(110%) blur(2px);}
-.section-wide{flex:1}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.section-title{margin:0}
-
-/* two-col inside full-width card */
-.two-col{display:grid;grid-template-columns: 1fr 1fr; gap:18px}
-
 .hero-left{flex:0 0 440px}
 .date-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .date-row input{padding:12px;border-radius:10px;border:1px solid #eef6ff}
@@ -135,6 +131,31 @@ body{
 .chart-heading{font-weight:800;margin-bottom:8px}
 .mt{margin-top:18px}
 
+/* awards */
+.awards{margin-top:16px;padding:10px;border-radius:10px}
+.awards-list{list-style:none;margin:10px 0 0 0;padding:0;max-height:180px;overflow:auto}
+.awards-list li{padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-bottom:8px}
+
+/* analytics */
+.analytics{margin-top:14px;padding:10px;border-radius:10px}
+.analytics-row{display:flex;gap:18px;align-items:center;margin-top:8px}
+.sparkline-row{margin-top:12px}
+
+/* AI insights */
+.insights-list{list-style:none;padding-left:0;margin:12px 0;display:flex;flex-direction:column;gap:8px}
+.insights-list li{
+  background:linear-gradient(180deg,#ffffff,#f8fbff);
+  padding:10px 12px;border-radius:10px;border-left:4px solid var(--accent);
+  box-shadow:0 8px 22px rgba(2,6,23,0.06);
+}
+.insight-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+
+/* Data tools (export only) */
+.data-tools .data-tools-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px
+}
+.data-actions{display:flex;gap:10px}
+
 /* heatmap */
 .heatmap{ display:grid; grid-template-columns: repeat(24, 1fr); gap:4px; }
 .heatmap .cell{
@@ -145,45 +166,10 @@ body{
 .heatmap .cell:hover{ transform: scale(1.06); filter: saturate(120%); }
 .heatmap .cell[data-v="0"]{ background:#eef3ff; }
 .heatmap .cell[data-v="1"]{ background:#dcedff; }
-.heatmap .cell[data-v="2"]{ background:#c3e1ff; }
-.heatmap .cell[data-v="3"]{ background:#a7d3ff; }
-.heatmap .cell[data-v="4"]{ background:#7fc3ff; }
-.heatmap .cell[data-v="5"]{ background:#52b2ff; }
-
-/* awards & analytics */
-.awards-list{list-style:none;margin:10px 0 0 0;padding:0;max-height:200px;overflow:auto}
-.awards-list li{padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-bottom:8px}
-.analytics{margin-top:4px;padding:10px;border-radius:10px}
-.analytics-row{display:flex;gap:18px;align-items:center;margin-top:8px}
-.sparkline-row{margin-top:12px}
-
-/* insights */
-.insights-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-.insights-list li{
-  padding:12px;border-radius:10px;background:linear-gradient(180deg,#ffffff,#f8fbff);
-  border-left:4px solid var(--accent); box-shadow: 0 6px 18px rgba(2,6,23,0.04);
-}
-
-/* export-only row */
-.export-only .export-row{display:flex;align-items:center;justify-content:space-between}
-
-/* modal */
-.modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:60}
-.modal.hidden{display:none}
-.modal-card{width:440px;background:var(--card);border-radius:12px;padding:16px;box-shadow:0 30px 60px rgba(2,6,23,0.16)}
-.modal-header{display:flex;justify-content:space-between;align-items:center}
-.modal-body{margin-top:12px;display:flex;flex-direction:column;gap:10px}
-.form-row{display:flex;flex-direction:column;gap:6px}
-.form-row input{padding:12px;border-radius:10px;border:1px solid #eef6ff}
-
-/* confetti canvas overlay */
-#confetti-canvas {
-  position: fixed;
-  left: 0; top: 0;
-  width: 100vw; height: 100vh;
-  pointer-events: none;
-  z-index: 9999;
-}
+.heatmap .cell[data-v="2"]{ background:#c6e3ff; }
+.heatmap .cell[data-v="3"]{ background:#a9d6ff; }
+.heatmap .cell[data-v="4"]{ background:#86c6ff; }
+.heatmap .cell[data-v="5"]{ background:#64b6ff; }
 
 /* toast */
 #toastContainer {
@@ -219,7 +205,5 @@ body{
 @media (max-width:980px){
   .hero{flex-direction:column}
   .hero-left{flex-basis:auto}
-  .two-col{grid-template-columns: 1fr}
   #toastContainer { left: 12px; right: 12px; bottom: 12px; max-width: calc(100% - 24px); }
 }
-``
