@@ -1,11 +1,18 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BreatheFree — Cigarette Tracker</title>
+  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and CSV import/export." />
+  <meta name="theme-color" content="#00a8ff" />
 
-  <link rel="stylesheet" href="css/styles.css">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./styles.css" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -14,7 +21,7 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <img src="favicon.svg" class="logo" alt="" />
+        <img src="favicon.svg" class="logo" alt="BreatheFree logo" />
         <div class="title-wrap">
           <h1>BreatheFree</h1>
           <p class="subtitle">Track your daily cigarette intake — stored locally</p>
@@ -22,8 +29,8 @@
       </div>
 
       <div class="top-actions">
-        <button id="openSettingsBtn" class="btn circle" title="Settings">⚙</button>
-        <label for="fileImport" class="btn outline">Import</label>
+        <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
+        <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
         <input id="fileImport" type="file" accept=".csv" hidden>
         <button id="exportBtn" class="btn outline">Export CSV</button>
       </div>
@@ -52,9 +59,9 @@
           </div>
 
           <div class="controls">
-            <button id="decrementBtn" class="btn large secondary">−</button>
+            <button id="decrementBtn" class="btn large secondary" aria-label="Remove last for selected date">−</button>
             <button id="addNowBtn" class="btn large primary">Log Now</button>
-            <button id="incrementBtn" class="btn large secondary">+</button>
+            <button id="incrementBtn" class="btn large secondary" aria-label="Log another now">+</button>
           </div>
 
           <!-- Craving controls -->
@@ -150,7 +157,7 @@
     <div class="modal-card">
       <header class="modal-header">
         <h3>Edit achievement</h3>
-        <button id="closeAchModal" class="btn circle">✕</button>
+        <button id="closeAchModal" class="btn circle" aria-label="Close achievement modal">✕</button>
       </header>
       <div class="modal-body">
         <div class="form-row">
@@ -174,7 +181,7 @@
     <div class="modal-card">
       <header class="modal-header">
         <h3>Settings</h3>
-        <button id="closeSettingsBtn" class="btn circle">✕</button>
+        <button id="closeSettingsBtn" class="btn circle" aria-label="Close settings">✕</button>
       </header>
 
       <div class="modal-body">
@@ -214,6 +221,7 @@
   <!-- Toast container (stacked toasts) -->
   <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 
-  <script src="js/tracker.js" defer></script>
+  <!-- App script -->
+  <script src="./tracker.js" defer></script>
 </body>
 </html>
