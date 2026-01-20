@@ -1,20 +1,21 @@
 
-// BreatheFree — craving timer, achievements, AI insights, charts, CSV export
+// BreatheFree — craving timer, achievements, stacked toasts, analytics + sparkline, Excel export
 (function () {
   'use strict';
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Keys
-    const EVENTS_KEY = 'breathefree:events';
+    // Storage keys
+    const EVENTS_KEY   = 'breathefree:events';
     const SETTINGS_KEY = 'breathefree:settings';
-    const UNDO_KEY = 'breathefree:undo';
-    const ACH_KEY = 'breathefree:achievements';
-    const CRAVING_KEY = 'breathefree:craving';
+    const UNDO_KEY     = 'breathefree:undo';
+    const ACH_KEY      = 'breathefree:achievements';
+    const CRAVING_KEY  = 'breathefree:craving';
 
     // Helpers
     const $ = id => document.getElementById(id);
     const isoDate = (d = new Date()) => d.toISOString().slice(0, 10);
     const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const clamp = (n, a, b)=> Math.max(a, Math.min(b, n));
 
     // DOM
     const dateInput = $('dateInput');
@@ -24,11 +25,13 @@
     const addNowBtn = $('addNowBtn');
     const datetimeInput = $('datetimeInput');
     const addAtBtn = $('addAtBtn');
+
     const exportBtn = $('exportBtn');
-    const exportEventsToolbarBtn = $('exportEventsBtn');
+    const exportEventsBtn = $('exportEventsBtn');
     const fileImport = $('fileImport');
     const clearBtn = $('clearBtn');
     const undoBtn = $('undoBtn');
+
     const avg7El = $('avg7');
     const avg30El = $('avg30');
     const totalLoggedEl = $('totalLogged');
@@ -46,7 +49,11 @@
     const currentStreakEl = $('currentStreak');
     const bestStreakEl = $('bestStreak');
 
-    // Ach modal
+    const insightsList = $('insightsList');
+    const insightCravingBtn = $('insightCravingBtn');
+    const insightExportBtn = $('insightExportBtn');
+
+    // Modal
     const achModal = $('achModal');
     const closeAchModalBtn = $('closeAchModal');
     const saveAchBtn = $('saveAchBtn');
@@ -56,7 +63,6 @@
 
     // Settings modal
     const openSettingsBtn = $('openSettingsBtn');
-    const settingsModal = $('settingsModal');
     const closeSettingsBtn = $('closeSettingsBtn');
     const saveSettingsBtn = $('saveSettingsBtn');
     const resetSettingsBtn = $('resetSettingsBtn');
@@ -74,10 +80,6 @@
     let monthlyChart = null;
     let sparkChart = null;
 
-    // AI
-    const aiList = $('aiList');
-    const ai2minBtn = $('ai2minBtn');
-
     // toast container
     const toastContainer = $('toastContainer');
 
@@ -85,23 +87,26 @@
     let activeAchievementId = null;
 
     // Storage helpers
-    const loadEvents = () => { try { const r = localStorage.getItem(EVENTS_KEY); return r ? JSON.parse(r) : []; } catch { return []; } };
-    const saveEvents = (e) => localStorage.setItem(EVENTS_KEY, JSON.stringify(e));
+    const loadJSON = (k, fallback) => { try{ const r = localStorage.getItem(k); return r? JSON.parse(r): fallback; }catch{ return fallback; } };
+    const saveJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    const loadEvents = () => loadJSON(EVENTS_KEY, []);
+    const saveEvents = e => saveJSON(EVENTS_KEY, e);
 
     const defaultSettings = { price: 0.5, dailyTarget: 10, currency: '$', cravingDuration: 5, streakTarget: 7 };
-    const loadSettings = () => { try { const r = localStorage.getItem(SETTINGS_KEY); return r ? Object.assign({}, defaultSettings, JSON.parse(r)) : { ...defaultSettings }; } catch { return { ...defaultSettings }; } };
-    const saveSettings = (s) => localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    const loadSettings = () => Object.assign({}, defaultSettings, loadJSON(SETTINGS_KEY, {}));
+    const saveSettings = s => saveJSON(SETTINGS_KEY, s);
 
-    const loadAchievements = () => { try { const r = localStorage.getItem(ACH_KEY); return r ? JSON.parse(r) : []; } catch { return []; } };
-    const saveAchievements = (a) => localStorage.setItem(ACH_KEY, JSON.stringify(a));
+    const loadAchievements = () => loadJSON(ACH_KEY, []);
+    const saveAchievements = a => saveJSON(ACH_KEY, a);
 
-    const loadCraving = () => { try { const r = localStorage.getItem(CRAVING_KEY); return r ? JSON.parse(r) : { endTs: null }; } catch { return { endTs: null }; } };
-    const saveCraving = (c) => localStorage.setItem(CRAVING_KEY, JSON.stringify(c));
+    const loadCraving = () => loadJSON(CRAVING_KEY, { endTs: null });
+    const saveCraving = c => saveJSON(CRAVING_KEY, c);
 
-    const pushUndo = (p) => { localStorage.setItem(UNDO_KEY, JSON.stringify({ payload: p, ts: new Date().toISOString() })); if (undoBtn) undoBtn.disabled = false; };
-    const popUndo = () => { const r = localStorage.getItem(UNDO_KEY); if (!r) return null; localStorage.removeItem(UNDO_KEY); if (undoBtn) undoBtn.disabled = true; return JSON.parse(r).payload; };
+    const pushUndo = p => { saveJSON(UNDO_KEY, { payload:p, ts:new Date().toISOString() }); if(undoBtn) undoBtn.disabled=false; };
+    const popUndo  = () => { const r=loadJSON(UNDO_KEY,null); localStorage.removeItem(UNDO_KEY); if(undoBtn) undoBtn.disabled=true; return r?r.payload:null; };
 
-    // Toasts (stacking)
+    // Toasts
     function showToast(message, { timeout = 5000, actionText = null, action = null } = {}) {
       if (!toastContainer) return;
       const t = document.createElement('div'); t.className = 'toast';
@@ -122,7 +127,6 @@
       setTimeout(remove, timeout);
       return t;
     }
-    window.showToast = showToast;
 
     // Events
     function addEvent(ts = new Date().toISOString()) {
@@ -133,7 +137,7 @@
       saveEvents(events);
       render();
     }
-    function removeEvent(id) {
+    function removeEvent(id) { // kept for internal use if needed
       const events = loadEvents(); const idx = events.findIndex(e => e.id === id); if (idx === -1) return;
       const removed = events.splice(idx, 1)[0]; pushUndo({ action: 'delete', event: removed }); saveEvents(events); render();
     }
@@ -142,133 +146,200 @@
       pushUndo({ action: 'clear', events }); localStorage.removeItem(EVENTS_KEY); render();
     }
 
-    // CSV (Excel-compatible)
-    function exportCSV() {
+    // CSV import (kept)
+    function importCSV(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (!lines.length) { showToast('CSV empty or invalid'); return; }
+        const first = lines[0].toLowerCase();
+        if (first.includes('timestamp') || first.includes('id')) lines.shift();
+        const events = loadEvents(); let count = 0;
+        lines.forEach(line => {
+          const cols = line.split(',');
+          const ts = (cols[1] || cols[0] || '').replace(/^"|"$/g, '');
+          const d = new Date(ts); if (!ts || isNaN(d.getTime())) return;
+          events.push({ id: uid(), ts: d.toISOString() }); count++;
+        });
+        events.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+        saveEvents(events);
+        showToast(`Imported ${count} events`, { timeout: 3000 });
+        render();
+      };
+      reader.readAsText(file);
+    }
+
+    // Excel export (.xlsx) — events + achievements in one workbook
+    function exportExcel() {
       const events = loadEvents();
-      const rows = [['id', 'timestamp', 'date',Absolutely, Aritra—here are the **fully replaceable files** with your requested updates:
+      const achievements = loadAchievements();
+      const settings = loadSettings();
 
-- ✅ **Recent events list removed** — only a clean **Export to Excel** button remains.
-- ✅ **AI Insights** section added (local-only, motivational & actionable).
-- ✅ **Achievements & Craving Analytics** moved to a **separate section below the Smoke Log** for a balanced layout.
-- ✅ Keeps the **animated background** and **bigger buttons**.
-- ✅ Adds **Export to Excel (.xlsx)** using a client-side library (no server needed).
+      const eventsRows = [['id','timestamp','date','hour']];
+      events.forEach(e => {
+        const d = new Date(e.ts);
+        eventsRows.push([e.id, e.ts, e.ts.slice(0,10), String(d.getHours()).padStart(2,'0') + ':00']);
+      });
 
-> Copy these four files into your repo root and re-deploy GitHub Pages.
+      const achRows = [['id','timestamp','date','reason','location']];
+      achievements.forEach(a => achRows.push([a.id, a.ts, a.ts.slice(0,10), a.reason||'', a.location||'']));
 
----
+      const settingsRows = [['key','value'],
+        ['price_per_stick', settings.price],
+        ['daily_target', settings.dailyTarget],
+        ['currency', settings.currency],
+        ['craving_duration_min', settings.cravingDuration],
+        ['streak_target_days', settings.streakTarget],
+        ['exported_at', new Date().toISOString()]
+      ];
 
-## `index.html`
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally. Craving timer, achievements, charts, AI insights, and Excel export." />
-  <meta name="theme-color" content="#00a8ff" />
+      const wb = XLSX.utils.book_new();
+      const wsEvents = XLSX.utils.aoa_to_sheet(eventsRows);
+      const wsAch = XLSX.utils.aoa_to_sheet(achRows);
+      const wsSettings = XLSX.utils.aoa_to_sheet(settingsRows);
+      XLSX.utils.book_append_sheet(wb, wsEvents, 'Events');
+      XLSX.utils.book_append_sheet(wb, wsAch, 'Achievements');
+      XLSX.utils.book_append_sheet(wb, wsSettings, 'Settings');
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
+      XLSX.writeFile(wb, 'breathefree-data.xlsx');
+      showToast('Excel exported', { timeout: 1800 });
+    }
 
-  <!-- Chart.js (charts) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- SheetJS (Excel export) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    // Craving timer logic
+    function cravingDurationMs() { const s = loadSettings(); return clamp(parseInt(s.cravingDuration,10)||5,1,60) * 60 * 1000; }
+    function isCravingActive() { const c = loadCraving(); return c && c.endTs && (new Date(c.endTs).getTime() > Date.now()); }
+    function remainingMs() { const c = loadCraving(); if (!c || !c.endTs) return 0; return Math.max(0, new Date(c.endTs).getTime() - Date.now()); }
+    function formatMMSS(ms) { const tot = Math.ceil(ms / 1000); const mm = Math.floor(tot / 60); const ss = tot % 60; return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`; }
 
-  <!-- App script -->
-  <script src="tracker.js" defer></script>
-</head>
-<body>
-  <!-- Bright animated background (decorative only) -->
-  <div class="bg-anim" aria-hidden="true">
-    <span class="blob b1"></span>
-    <span class="blob b2"></span>
-    <span class="blob b3"></span>
-    <span class="blob b4"></span>
-    <span class="blob b5"></span>
-  </div>
+    function startCraving(customMin = null) {
+      const minutes = customMin ? clamp(customMin,1,60) : (parseInt(loadSettings().cravingDuration,10) || 5);
+      const endTs = Date.now() + minutes * 60 * 1000;
+      saveCraving({ endTs });
+      updateCravingUI();
+      if (lastCravingTimerInterval) clearInterval(lastCravingTimerInterval);
+      lastCravingTimerInterval = setInterval(() => {
+        updateCravingUI();
+        if (!isCravingActive()) {
+          clearInterval(lastCravingTimerInterval);
+          lastCravingTimerInterval = null;
+          completeCraving();
+        }
+      }, 1000);
+      showToast(`Craving started (${minutes} min)`, { timeout: 2500 });
+    }
+    function stopCraving() {
+      saveCraving({ endTs: null });
+      if (lastCravingTimerInterval) { clearInterval(lastCravingTimerInterval); lastCravingTimerInterval = null; }
+      updateCravingUI();
+      showToast('Craving stopped', { timeout: 2000 });
+    }
+    function completeCraving() {
+      const ach = loadAchievements();
+      const now = new Date().toISOString();
+      const newAch = { id: uid(), ts: now, reason: '', location: '' };
+      ach.unshift(newAch);
+      saveAchievements(ach);
+      saveCraving({ endTs: null });
+      updateCravingUI();
+      render();
+      startConfetti();
+      showToast('Achievement unlocked! + saved 1 cigarette', {
+        timeout: 7000,
+        actionText: 'Add details',
+        action: () => openAchModal(newAch.id)
+      });
+      renderAnalytics();
+    }
 
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <img src="favicon.svg" class="logo" alt="BreatheFree logo" />
-        <div class="title-wrap">
-          <h1>BreatheFree</h1>
-          <p class="subtitle">Track your daily cigarette intake — stored locally</p>
-        </div>
-      </div>
+    // Ach modal functions
+    function openAchModal(achId) {
+      activeAchievementId = achId;
+      const ach = loadAchievements().find(a => a.id === achId);
+      if (!ach) return;
+      achReasonInput.value = ach.reason || '';
+      achLocationInput.value = ach.location || '';
+      achModal.classList.remove('hidden'); achModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeAchModalFunc() {
+      achModal.classList.add('hidden'); achModal.setAttribute('aria-hidden', 'true'); activeAchievementId = null;
+    }
+    function saveAchDetails() {
+      if (!activeAchievementId) return closeAchModalFunc();
+      const achArr = loadAchievements();
+      const a = achArr.find(x => x.id === activeAchievementId);
+      if (!a) return closeAchModalFunc();
+      a.reason = (achReasonInput.value || '').trim();
+      a.location = (achLocationInput.value || '').trim();
+      saveAchievements(achArr);
+      closeAchModalFunc();
+      renderAchievements();
+      renderAnalytics();
+      showToast('Achievement details saved', { timeout: 2200 });
+    }
 
-      <div class="top-actions">
-        <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
-        <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
-        <input id="fileImport" type="file" accept=".csv" hidden>
-        <button id="exportBtn" class="btn outline">Export Excel</button>
-      </div>
-    </header>
+    // Confetti
+    let confettiActive = false;
+    function startConfetti() {
+      if (confettiActive) return; confettiActive = true;
+      const cv = document.createElement('canvas'); cv.id = 'confetti-canvas'; cv.width = window.innerWidth; cv.height = window.innerHeight; document.body.appendChild(cv);
+      const ctx = cv.getContext('2d');
+      const colors = ['#ff7a59', '#00a8ff', '#7b61ff', '#ffd56b', '#22c55e'];
+      const pieces = []; const num = Math.floor(Math.max(24, window.innerWidth / 30));
+      for (let i = 0; i < num; i++) {
+        pieces.push({
+          x: Math.random() * cv.width, y: Math.random() * -cv.height * 0.5,
+          w: 8 + Math.random() * 10, h: 8 + Math.random() * 10,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rot: Math.random() * Math.PI * 2, velX: (Math.random() - 0.5) * 4,
+          velY: 2 + Math.random() * 6, spin: (Math.random() - 0.5) * 0.2
+        });
+      }
+      let t0 = null; const duration = 2200;
+      function step(ts) {
+        if (!t0) t0 = ts; const elapsed = ts - t0; ctx.clearRect(0, 0, cv.width, cv.height);
+        pieces.forEach(p => { p.x += p.velX; p.y += p.velY; p.velY += 0.15; p.rot += p.spin; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); });
+        if (elapsed < duration) requestAnimationFrame(step);
+        else {
+          let fade = 1;
+          const fadeStep = () => {
+            fade -= 0.06; ctx.fillStyle = `rgba(255,255,255,${1 - fade})`; ctx.fillRect(0, 0, cv.width, cv.height);
+            if (fade > 0) requestAnimationFrame(fadeStep); else { confettiActive = false; try { document.body.removeChild(cv); } catch { } }
+          };
+          requestAnimationFrame(fadeStep);
+        }
+      }
+      requestAnimationFrame(step);
+      const onResize = () => { cv.width = window.innerWidth; cv.height = window.innerHeight; };
+      window.addEventListener('resize', onResize, { once: false });
+      setTimeout(() => window.removeEventListener('resize', onResize), duration + 600);
+    }
 
-    <!-- ===== Row 1: Smoke Log (left) + Charts (right) ===== -->
-    <main class="main">
-      <section class="hero">
-        <!-- Smoke Log -->
-        <div class="hero-left card">
-          <div class="date-row">
-            <label for="dateInput">Date</label>
-            <input id="dateInput" type="date" />
-          </div>
+    // Analytics, charts, stats
+    function countsLastNDays(n) {
+      const events = loadEvents();
+      const counts = {};
+      for (let i = 0; i < n; i++) { const day = isoDate(new Date(Date.now() - i * 24 * 3600 * 1000)); counts[day] = 0; }
+      events.forEach(e => { const d = e.ts.slice(0, 10); if (d in counts) counts[d]++; });
+      return counts;
+    }
 
-          <div class="counter-display">
-            <div>
-              <div class="big-count" id="countNumber">0</div>
-              <div class="small-label">Cigarettes today</div>
-            </div>
+    function updateStatsAndCharts() {
+      const settings = loadSettings();
+      const counts7 = countsLastNDays(7);
+      const counts30 = countsLastNDays(30);
+      const todayISO = isoDate();
+      const todayCount = counts7[todayISO] || 0;
+      if (countNumber) countNumber.textContent = todayCount;
+      const sum7 = Object.values(counts7).reduce((a, b) => a + b, 0);
+      const sum30 = Object.values(counts30).reduce((a, b) => a + b, 0);
+      if (avg7El) avg7El.textContent = (sum7 / 7).toFixed(1);
+      if (avg30El) avg30El.textContent = (sum30 / 30).toFixed(1);
+      const events = loadEvents(); if (totalLoggedEl) totalLoggedEl.textContent = events.length;
+      const moneySpent = (events.length * (parseFloat(settings.price) || 0)); if (moneySpentEl) moneySpentEl.textContent = `${settings.currency || '$'}${moneySpent.toFixed(2)}`;
+      const ach = loadAchievements(); const saved = (ach.length * (parseFloat(settings.price) || 0)); if (savedAmountEl) savedAmountEl.textContent = `${settings.currency || '$'}${saved.toFixed(2)}`;
 
-            <div class="money-box card-compact">
-              <div class="muted">Money spent</div>
-              <div id="moneySpent" class="money-amount">$0.00</div>
-              <div class="muted">Saved</div>
-              <div id="savedAmount" class="money-amount">$0.00</div>
-            </div>
-          </div>
-
-          <div class="controls">
-            <button id="decrementBtn" class="btn huge secondary" aria-label="Remove last for selected date">−</button>
-            <button id="addNowBtn" class="btn huge primary">Log Now</button>
-            <button id="incrementBtn" class="btn huge secondary" aria-label="Log another now">+</button>
-          </div>
-
-          <!-- Craving controls -->
-          <div class="craving-row">
-            <button id="startCravingBtn" class="btn huge accent">Start Craving</button>
-            <button id="stopCravingBtn" class="btn huge outline" disabled>Stop</button>
-            <div id="cravingTimer" class="craving-timer" aria-live="polite"></div>
-          </div>
-
-          <div class="manual-row">
-            <input id="datetimeInput" type="datetime-local" />
-            <button id="addAtBtn" class="btn large">Add at time</button>
-            <button id="undoBtn" class="btn large outline" disabled>Undo</button>
-            <button id="clearBtn" class="btn large danger">Clear</button>
-          </div>
-
-          <div class="quick-stats">
-            <div>
-              <div class="stat-label">7-day avg</div>
-              <div class="stat-value" id="avg7">0</div>
-            </div>
-            <div>
-              <div class="stat-label">30-day avg</div>
-              <div class="stat-value" id="avg30">0</div>
-            </div>
-            <div>
-              <div class="stat-label">Total logged</div>
-              <div class="stat-value" id="totalLogged">0</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="hero-right card">
-          <h3 class="chart-heading">Progress (last 7 days)</h3>
+      // weekly chart
+      if (weeklyCanvas) {
+        const labels7 = []; const data7 = [];
