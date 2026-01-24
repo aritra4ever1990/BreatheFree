@@ -1,258 +1,269 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BreatheFree — Cigarette Tracker</title>
-  <meta name="description" content="Track your daily cigarette intake locally in your browser. Craving timer, achievements, charts, and export to Excel." />
-  <meta name="theme-color" content="#00a8ff" />
-
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="./css/styles.css" />
-
-  <!-- Chart.js (deferred, loads before app script) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-  <!-- App script -->
-  <script src="./js/tracker.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmokeLess — Personal Smoking Tracker</title>
+  <meta name="description" content="Track your smoking, build a taper plan, and quit within 3 months." />
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Bright animated background (decorative only) -->
-  <div class="bg-anim" aria-hidden="true">
-    <span class="blob b1"></span>
-    <span class="blob b2"></span>
-    <span class="blob b3"></span>
-    <span class="blob b4"></span>
-    <span class="blob b5"></span>
-  </div>
+  <header class="app-header">
+    <h1>🚭 SmokeLess</h1>
+    <div class="header-actions">
+      <label class="theme-label">Theme
+        <select id="themeSwitch">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn" data-tab="dashboard" aria-selected="false">Dashboard</button>
+      <button class="tab-btn active" data-tab="log" aria-selected="true">Log</button>
+      <button class="tab-btn" data-tab="history">History</button>
+      <button class="tab-btn" data-tab="plan">Plan</button>
+      <button class="tab-btn" data-tab="data">Data</button>
+    </nav>
+  </header>
 
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <img src="favicon.svg" class="logo" alt="" />
-        <div class="title-wrap">
-          <h1>BreatheFree</h1>
-          <p class="subtitle">Track your daily cigarette intake — stored locally</p>
+  <!-- Toasts -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="tab-panel" aria-labelledby="Dashboard">
+      <div id="cardsContainer" class="cards">
+        <div class="card card-today" draggable="true" data-card="today">
+          <h3>Today</h3>
+          <p class="muted">Cigarettes logged</p>
+          <div class="metric"><span id="todayCount">0</span></div>
+          <div class="meta">
+            <span>Limit: <strong id="todayLimit">—</strong></span>
+            <span>Remaining: <strong id="remaining">—</strong></span>
+          </div>
+          <div class="row">
+            <button id="quickLog1" class="btn primary">+ Log 1</button>
+            <button id="undoLast" class="btn">Undo last</button>
+          </div>
+        </div>
+
+        <div class="card card-trend" draggable="true" data-card="trend">
+          <h3>7‑Day Trend</h3>
+          <div id="sparkline" class="sparkline" aria-label="Last 7 days bar sparkline"></div>
+          <p class="muted" id="weeklySummary"></p>
+        </div>
+
+        <div class="card card-money" draggable="true" data-card="money">
+          <h3>Money</h3>
+          <p class="muted">Estimated spend this month</p>
+          <div class="metric"> <span id="moneySpent">₹0</span></div>
+          <p class="muted">vs baseline you could be saving <strong id="moneySaved">₹0</strong></p>
+          <p class="muted">Craving savings (this month) <strong id="moneyCravingSaved">₹0</strong></p>
+          <p class="muted">Total craving savings (to date) <strong id="moneyCravingSavedTotal">₹0</strong></p>
+        </div>
+
+        <!-- CRAVING TIMER -->
+        <div class="card card-timer" draggable="true" data-card="timer">
+          <h3>Craving Timer</h3>
+          <div class="timer">
+            <div class="timer-display" id="timerDisplay">10:00</div>
+            <div class="grid-2">
+              <label>Craving intensity (1–5)
+                <select id="cravingIntensity">
+                  <option>1</option>
+                  <option>2</option>
+                  <option selected>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                </select>
+              </label>
+              <label>Optional note
+                <input type="text" id="cravingNote" placeholder="e.g., after coffee" />
+              </label>
+            </div>
+            <div class="row">
+              <button id="timerStart" class="btn primary">Start</button>
+              <button id="timerDelay5" class="btn">Delay 5 min</button>
+              <button id="timerPause" class="btn">Pause</button>
+              <button id="timerReset" class="btn">Reset</button>
+            </div>
+            <p class="muted" id="timerTip">Tip: Take 10 slow breaths—in through the nose, out through the mouth.</p>
+          </div>
+        </div>
+
+        <!-- STREAKS & BADGES (live) -->
+        <div class="card card-streaks" draggable="true" data-card="streaks">
+          <h3>Streaks & Badges</h3>
+          <div class="streaks">
+            <div>Within‑limit streak: <strong id="streakWithin">0</strong> days</div>
+            <div>Zero‑day streak: <strong id="streakZero">0</strong> days</div>
+            <div>Weekly change: <strong id="weeklyChange">—</strong></div>
+          </div>
+          <div class="badges-list" id="badgesList"></div>
+        </div>
+
+        <!-- BADGES GALLERY with filter -->
+        <div class="card card-gallery" draggable="true" data-card="gallery">
+          <h3>Badges Gallery</h3>
+          <div class="row wrap" id="badgesFilter" style="gap:8px; margin-bottom:8px;">
+            <button class="chip" data-cat="all">All</button>
+            <button class="chip" data-cat="streaks">Streaks</button>
+            <button class="chip" data-cat="timer">Timer</button>
+            <button class="chip" data-cat="savings">Savings</button>
+          </div>
+          <div id="badgesGallery" class="badges-gallery"></div>
+        </div>
+
+        <!-- 30-DAY LINE CHART -->
+        <div class="card card-linechart" draggable="true" data-card="linechart">
+          <h3>30‑Day Line Chart</h3>
+          <canvas id="chart30" class="chart" width="640" height="260" aria-label="30 day line chart"></canvas>
+          <p class="muted">Counts per day (blue). Daily limit (gray).</p>
+        </div>
+
+        <!-- TRIGGERS HEATMAP (HOURS × TRIGGERS) -->
+        <div class="card card-heatmap" draggable="true" data-card="heatmap">
+          <h3>Triggers Heatmap (Hours × Triggers, Last 30 days)</h3>
+          <canvas id="heatmap" class="heatmap" width="640" height="340" aria-label="Triggers heatmap hours by triggers"></canvas>
+          <p class="muted">Rows = triggers, Columns = hours (0–23). Darker = more logs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOG (default) -->
+    <section id="log" class="tab-panel active" aria-labelledby="Log">
+      <form id="logForm" class="card form">
+        <h3>Log a cigarette</h3>
+        <div class="grid-2">
+          <label>Count
+            <input type="number" id="count" min="1" value="1" required />
+          </label>
+          <label>Time
+            <input type="datetime-local" id="when" />
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Trigger
+            <select id="triggerSelect"></select>
+          </label>
+          <label>Mood
+            <select id="mood">
+              <option value="">— choose —</option>
+              <option>Calm</option>
+              <option>Neutral</option>
+              <option>Stressed</option>
+              <option>Anxious</option>
+              <option>Happy</option>
+            </select>
+          </label>
+        </div>
+        <label>Notes
+          <textarea id="note" rows="2" placeholder="Anything notable (time, place, craving level)…"></textarea>
+        </label>
+        <div class="row end">
+          <button type="submit" id="logSaveBtn" class="btn primary">Save</button>
+        </div>
+        <p class="muted" id="loggingDisabledMsg" style="display:none">Logging is temporarily disabled while the craving timer is running.</p>
+      </form>
+
+      <div class="card">
+        <h3>Quick actions</h3>
+        <div id="chipsRow" class="row wrap"></div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="history" class="tab-panel" aria-labelledby="History">
+      <div class="card">
+        <h3>Recent entries</h3>
+        <div id="historyList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section id="plan" class="tab-panel" aria-labelledby="Plan">
+      <div class="card form">
+        <h3>3‑Month Quit Plan</h3>
+        <div class="grid-2">
+          <label>Baseline daily average (cigs/day)
+            <input type="number" id="baseline" min="1" placeholder="e.g., 12" />
+          </label>
+          <label>Quit date
+            <input type="date" id="quitDate" />
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Cost per pack
+            <input type="number" id="costPerPack" min="0" step="0.01" placeholder="e.g., 150" />
+          </label>
+          <label>Cigs per pack
+            <input type="number" id="cigsPerPack" min="1" placeholder="e.g., 20" />
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Craving timer (minutes)
+            <input type="number" id="timerMinutes" min="1" step="1" placeholder="e.g., 10" />
+          </label>
+        </div>
+        <div class="row end">
+          <button id="generatePlan" class="btn">Generate/Update Plan</button>
+          <button id="clearPlan" class="btn danger">Clear Plan</button>
         </div>
       </div>
 
-      <div class="top-actions">
-        <button id="openSettingsBtn" class="btn circle" title="Settings" aria-label="Open settings">⚙</button>
-        <label for="fileImport" class="btn outline" role="button" aria-label="Import from CSV">Import</label>
-        <input id="fileImport" type="file" accept=".csv" hidden>
-        <button id="exportBtn" class="btn outline">Export CSV</button>
+      <div class="card form">
+        <h3>Triggers</h3>
+        <label>Current triggers
+          <select id="planTriggersSelect" multiple size="6"></select>
+        </label>
+        <div id="planTriggersEditor"></div>
+        <div class="row" style="margin-top:8px; gap:8px;">
+          <input id="planNewTrigger" type="text" placeholder="Add new trigger" />
+          <button id="planAddTriggerBtn" class="btn">Add</button>
+        </div>
+        <p class="muted">Tip: Tailor triggers to your habits. This updates the Log dropdown and quick chips.</p>
       </div>
-    </header>
 
-    <!-- ====== TOP GRID ====== -->
-    <main class="main">
-      <section class="hero">
-        <!-- Left: Smoke Log -->
-        <div class="hero-left card">
-          <div class="date-row">
-            <label for="dateInput">Date</label>
-            <input id="dateInput" type="date" />
-          </div>
+      <div class="card">
+        <h3>Daily Limits (next 90 days)</h3>
+        <div id="planGrid" class="plan-grid"></div>
+      </div>
+    </section>
 
-          <div class="counter-display">
-            <div>
-              <div class="big-count" id="countNumber">0</div>
-              <div class="small-label">Cigarettes today</div>
-            </div>
-
-            <div class="money-box card-compact">
-              <div class="muted">Money spent</div>
-              <div id="moneySpent" class="money-amount">$0.00</div>
-              <div class="muted">Saved</div>
-              <div id="savedAmount" class="money-amount">$0.00</div>
-            </div>
-          </div>
-
-          <div class="controls">
-            <button id="decrementBtn" class="btn huge secondary" aria-label="Remove last for selected date">−</button>
-            <button id="addNowBtn" class="btn huge primary">Log Now</button>
-            <button id="incrementBtn" class="btn huge secondary" aria-label="Log another now">+</button>
-          </div>
-
-          <!-- Craving controls -->
-          <div class="craving-row">
-            <button id="startCravingBtn" class="btn huge accent">Start Craving</button>
-            <button id="stopCravingBtn" class="btn huge outline" disabled>Stop</button>
-            <div id="cravingTimer" class="craving-timer" aria-live="polite"></div>
-          </div>
-
-          <div class="manual-row">
-            <input id="datetimeInput" type="datetime-local" />
-            <button id="addAtBtn" class="btn large">Add at time</button>
-            <button id="undoBtn" class="btn large outline" disabled>Undo</button>
-            <button id="clearBtn" class="btn large danger">Clear</button>
-          </div>
-
-          <div class="quick-stats">
-            <div>
-              <div class="stat-label">7-day avg</div>
-              <div class="stat-value" id="avg7">0</div>
-            </div>
-            <div>
-              <div class="stat-label">30-day avg</div>
-              <div class="stat-value" id="avg30">0</div>
-            </div>
-            <div>
-              <div class="stat-label">Total logged</div>
-              <div class="stat-value" id="totalLogged">0</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Charts -->
-        <div class="hero-right card">
-          <h3 class="chart-heading">Progress (last 7 days)</h3>
-          <canvas id="weeklyChart" height="140"></canvas>
-
-          <h3 class="chart-heading mt">Monthly trend (30 days)</h3>
-          <canvas id="monthlyChart" height="140"></canvas>
-
-          <div class="card mt">
-            <h3 class="chart-heading">Hourly Heatmap (last 30 days)</h3>
-            <div id="hourHeatmap" class="heatmap" aria-label="Hourly heatmap"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====== NEW: Achievements + Craving analytics (full width, below smoke log) ====== -->
-      <section class="card section-wide">
-        <h2 class="section-title">Achievements &amp; Craving analytics</h2>
-
-        <div class="two-col">
+    <!-- DATA -->
+    <section id="data" class="tab-panel" aria-labelledby="Data">
+      <div class="card form">
+        <h3>Export / Import</h3>
+        <div class="grid-2">
           <div>
-            <strong>Achievements</strong> <small id="achCount">0</small>
-            <ul id="awardsList" class="awards-list"></ul>
-          </div>
-
-          <div class="analytics card-compact">
-            <strong>Craving analytics</strong>
-            <div class="analytics-row">
-              <div>
-                <div class="muted">Resisted today</div>
-                <div id="cravingsToday" class="stat-value">0</div>
-              </div>
-              <div>
-                <div class="muted">Resisted this week</div>
-                <div id="cravingsWeek" class="stat-value">0</div>
-              </div>
-              <div>
-                <div class="muted">Current streak</div>
-                <div id="currentStreak" class="stat-value">0</div>
-              </div>
-              <div>
-                <div class="muted">Best streak</div>
-                <div id="bestStreak" class="stat-value">0</div>
-              </div>
-            </div>
-
-            <div class="sparkline-row mt">
-              <canvas id="sparkline" height="50"></canvas>
+            <p class="muted">Download your data as JSON or CSV.</p>
+            <div class="row">
+              <button id="exportJson" class="btn">Export JSON</button>
+              <button id="exportCsv" class="btn">Export CSV</button>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- ====== NEW: AI Insights (motivational & actionable) ====== -->
-      <section class="card section-wide">
-        <div class="section-head">
-          <h2 class="section-title">AI Insights</h2>
-          <div class="section-actions">
-            <button id="refreshInsightsBtn" class="btn outline">Refresh tips</button>
+          <div>
+            <label class="file">
+              <span>Import JSON/CSV</span>
+              <input type="file" id="importFile" accept=".json,.csv" />
+            </label>
+            <p class="muted">Import merges with existing data. Duplicates by id are ignored.</p>
           </div>
         </div>
-        <ul id="insightsList" class="insights-list" aria-live="polite"></ul>
-      </section>
-
-      <!-- ====== Only Export button (no recent events list) ====== -->
-      <section class="card section-wide export-only">
-        <div class="export-row">
-          <div class="muted">Download your logs</div>
-          <div class="actions">
-            <button id="exportEventsBtn" class="btn primary">Export Events (Excel)</button>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">Stored locally in your browser • No external servers</footer>
-  </div>
-
-  <!-- Achievement details modal -->
-  <div id="achModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-card">
-      <header class="modal-header">
-        <h3>Edit achievement</h3>
-        <button id="closeAchModal" class="btn circle" aria-label="Close achievement modal">✕</button>
-      </header>
-      <div class="modal-body">
-        <div class="form-row">
-          <label for="achReason">Reason (optional)</label>
-          <input id="achReason" type="text" placeholder="e.g. stress, after-meal" />
-        </div>
-        <div class="form-row">
-          <label for="achLocation">Location (optional)</label>
-          <input id="achLocation" type="text" placeholder="e.g. home, bar" />
-        </div>
       </div>
-      <footer class="modal-footer">
-        <button id="saveAchBtn" class="btn primary">Save</button>
-        <button id="cancelAchBtn" class="btn outline">Cancel</button>
-      </footer>
-    </div>
-  </div>
+    </section>
+  </main>
 
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-card">
-      <header class="modal-header">
-        <h3>Settings</h3>
-        <button id="closeSettingsBtn" class="btn circle" aria-label="Close settings">✕</button>
-      </header>
+  <footer class="app-footer">
+    <small>Made for you to take back control. Data stays on your device.</small>
+  </footer>
 
-      <div class="modal-body">
-        <div class="form-row">
-          <label for="cigPrice">Cigarette price (per stick)</label>
-          <input id="cigPrice" type="number" min="0" step="0.01" placeholder="0.50" />
-        </div>
-
-        <div class="form-row">
-          <label for="dailyTarget">Daily target (sticks)</label>
-          <input id="dailyTarget" type="number" min="0" step="1" placeholder="10" />
-        </div>
-
-        <div class="form-row">
-          <label for="currency">Currency symbol</label>
-          <input id="currency" type="text" maxlength="4" placeholder="$" />
-        </div>
-
-        <div class="form-row">
-          <label for="cravingDuration">Craving duration (minutes)</label>
-          <input id="cravingDuration" type="number" min="1" max="60" step="1" placeholder="5" />
-        </div>
-
-        <div class="form-row">
-          <label for="streakTarget">Streak target (days for reward)</label>
-          <input id="streakTarget" type="number" min="1" max="365" step="1" placeholder="7" />
-        </div>
-      </div>
-
-      <footer class="modal-footer">
-        <button id="saveSettingsBtn" class="btn primary huge">Save settings</button>
-        <button id="resetSettingsBtn" class="btn large outline">Reset</button>
-      </footer>
-    </div>
-  </div>
-
-  <!-- Toast container (stacked toasts) -->
-  <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+  <script src="app.js"></script>
 </body>
 </html>
-``
