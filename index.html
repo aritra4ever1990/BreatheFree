@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SmokeLess — Personal Smoking Tracker</title>
+  <title>SmokeLess — Personal Smoking Tracker (Safe Mode)</title>
   <meta name="description" content="Track your smoking, build a taper plan, and quit within 3 months." />
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png" sizes="192x192">
@@ -36,10 +36,9 @@
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <main>
-    <!-- DASHBOARD -->
     <section id="dashboard" class="tab-panel" aria-labelledby="Dashboard">
       <div id="cardsContainer" class="cards">
-        <div class="card card-today" draggable="true" data-card="today">
+        <div class="card card-today" data-card="today">
           <h3>Today</h3>
           <p class="muted">Cigarettes logged</p>
           <div class="metric"><span id="todayCount">0</span></div>
@@ -53,13 +52,13 @@
           </div>
         </div>
 
-        <div class="card card-trend" draggable="true" data-card="trend">
+        <div class="card card-trend" data-card="trend">
           <h3>7‑Day Trend</h3>
           <div id="sparkline" class="sparkline" aria-label="Last 7 days bar sparkline"></div>
           <p class="muted" id="weeklySummary"></p>
         </div>
 
-        <div class="card card-money" draggable="true" data-card="money">
+        <div class="card card-money" data-card="money">
           <h3>Money</h3>
           <p class="muted">Estimated spend this month</p>
           <div class="metric"> <span id="moneySpent">₹0</span></div>
@@ -72,7 +71,7 @@
           <p class="muted">Goal: <strong id="savingsGoalText">—</strong> • Progress: <strong id="savingsProgressPct">0%</strong></p>
         </div>
 
-        <div class="card card-timer" draggable="true" data-card="timer">
+        <div class="card card-timer" data-card="timer">
           <h3>Craving Timer</h3>
           <div class="timer">
             <div class="timer-display" id="timerDisplay">10:00</div>
@@ -100,7 +99,7 @@
           </div>
         </div>
 
-        <div class="card card-streaks" draggable="true" data-card="streaks">
+        <div class="card card-streaks" data-card="streaks">
           <h3>Streaks & Badges</h3>
           <div class="streaks">
             <div>Within‑limit streak: <strong id="streakWithin">0</strong> days</div>
@@ -110,7 +109,7 @@
           <div class="badges-list" id="badgesList"></div>
         </div>
 
-        <div class="card card-gallery" draggable="true" data-card="gallery">
+        <div class="card card-gallery" data-card="gallery">
           <h3>Badges Gallery</h3>
           <div class="row wrap" id="badgesFilter" style="gap:8px; margin-bottom:8px;">
             <button class="chip" data-cat="all" data-nodrag>All</button>
@@ -121,13 +120,13 @@
           <div id="badgesGallery" class="badges-gallery"></div>
         </div>
 
-        <div class="card card-linechart" draggable="true" data-card="linechart">
+        <div class="card card-linechart" data-card="linechart">
           <h3>30‑Day Line Chart</h3>
           <canvas id="chart30" class="chart" width="640" height="260" aria-label="30 day line chart"></canvas>
           <p class="muted">Counts per day (blue). Daily limit (gray).</p>
         </div>
 
-        <div class="card card-heatmap" draggable="true" data-card="heatmap">
+        <div class="card card-heatmap" data-card="heatmap">
           <h3>Triggers Heatmap (Hours × Triggers, Last 30 days)</h3>
           <canvas id="heatmap" class="heatmap" width="640" height="340" aria-label="Triggers heatmap hours by triggers"></canvas>
           <p class="muted">Rows = triggers, Columns = hours (0–23). Darker = more logs.</p>
@@ -135,7 +134,6 @@
       </div>
     </section>
 
-    <!-- LOG (default) -->
     <section id="log" class="tab-panel active" aria-labelledby="Log">
       <form id="logForm" class="card form">
         <h3>Log a cigarette</h3>
@@ -177,7 +175,6 @@
       </div>
     </section>
 
-    <!-- HISTORY -->
     <section id="history" class="tab-panel" aria-labelledby="History">
       <div class="card">
         <h3>Recent entries</h3>
@@ -185,7 +182,6 @@
       </div>
     </section>
 
-    <!-- PLAN -->
     <section id="plan" class="tab-panel" aria-labelledby="Plan">
       <div class="card form">
         <h3>3‑Month Quit Plan</h3>
@@ -229,37 +225,16 @@
         <p class="muted">Tip: Tailor triggers to your habits. This updates the Log dropdown and quick chips.</p>
       </div>
 
-      <div class="card form">
-        <h3>Savings Goal</h3>
-        <div class="grid-2">
-          <label>Goal amount (₹)
-            <input type="number" id="savingsGoalAmount" min="0" step="1" placeholder="e.g., 2000" data-nodrag />
-          </label>
-          <label>Goal basis
-            <select id="savingsGoalBasis" data-nodrag>
-              <option value="total">Total savings (to date)</option>
-              <option value="month">This month</option>
-            </select>
-          </label>
-        </div>
-        <div class="row end">
-          <button id="saveSavingsGoal" class="btn" data-nodrag>Save Goal</button>
-          <button id="clearSavingsGoal" class="btn danger" data-nodrag>Clear Goal</button>
-        </div>
-      </div>
-
       <div class="card">
         <h3>Daily Limits (next 90 days)</h3>
         <div id="planGrid" class="plan-grid"></div>
       </div>
     </section>
 
-    <!-- COACH (AI) -->
     <section id="coach" class="tab-panel" aria-labelledby="Coach">
       <div class="card coach-card">
         <div class="row wrap" style="justify-content:space-between; gap:8px;">
-          <div class="muted">Your AI quit‑coach can suggest coping strategies, micro‑goals, and reframes.
-          </div>
+          <div class="muted">Your AI quit‑coach can suggest coping strategies, micro‑goals, and reframes.</div>
           <label class="muted" style="display:flex;align-items:center;gap:6px;">
             <input type="checkbox" id="coachShareContext" /> Share plan & recent stats for better help
           </label>
@@ -308,39 +283,6 @@
       </div>
     </section>
 
-    <!-- Relapse Repair Modal -->
-    <div id="relapseModal" class="modal" hidden>
-      <div class="modal-backdrop"></div>
-      <div class="modal-card">
-        <h3 style="margin-top:0;">Relapse Repair Plan</h3>
-        <div class="grid-2">
-          <label>Trigger / Situation
-            <input id="rrTrigger" type="text" placeholder="e.g., after argument" />
-          </label>
-          <label>When did it happen?
-            <input id="rrWhen" type="datetime-local" />
-          </label>
-        </div>
-        <label>What I’ll do right now
-          <input id="rrNow" type="text" placeholder="e.g., drink water + 5‑minute walk" />
-        </label>
-        <label>Who I’ll contact (optional)
-          <input id="rrContact" type="text" placeholder="e.g., friend or family" />
-        </label>
-        <label>Replacement behavior
-          <input id="rrReplace" type="text" placeholder="e.g., herbal tea, deep breathing" />
-        </label>
-        <label>Next 24‑hours micro‑goal
-          <input id="rrGoal" type="text" placeholder="e.g., follow plan limit, use timer for urges" />
-        </label>
-        <div class="row end" style="margin-top:8px;">
-          <button id="rrCancel" class="btn">Cancel</button>
-          <button id="rrSave" class="btn primary">Save plan</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- DATA -->
     <section id="data" class="tab-panel" aria-labelledby="Data">
       <div class="card form">
         <h3>Export / Import</h3>
@@ -365,9 +307,11 @@
   </main>
 
   <footer class="app-footer">
-    <small>Made for you to take back control. Data stays on your device.</small>
+    <small>Safe Mode build (no drag, no service worker) for click debugging.</small>
   </footer>
 
+  <button id="debugBtn" style="position:fixed;right:12px;bottom:12px;z-index:99999;background:#b91c1c;color:#fff;border:none;border-radius:999px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer">🐞 Debug</button>
   <script src="app.js"></script>
+  <script src="debug.js"></script>
 </body>
 </html>

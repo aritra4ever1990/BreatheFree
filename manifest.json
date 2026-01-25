@@ -1,6 +1,6 @@
 {
-  "name": "SmokeLess \u2014 Smoking Tracker",
-  "short_name": "SmokeLess",
+  "name": "SmokeLess \u2014 Smoking Tracker (Safe)",
+  "short_name": "SmokeLess Safe",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0b1220",
