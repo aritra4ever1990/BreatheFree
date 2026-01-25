@@ -1,41 +1,37 @@
-# 🚭 SmokeLess — Local Smoking Tracker (v6)
+# 🚭 SmokeLess — v8 (AI Coach)
 
-**New in v6:**
-1) **Savings counter & badges**
-   - On each successful **craving timer completion**, we add the **price of 1 cigarette** to a **running savings total** (settings.cravingSavingsTotal).
-   - New **Savings badges** (category: *savings*) at ₹100, ₹250, ₹500, ₹1,000, ₹2,000, ₹5,000, ₹10,000.
-   - Money card shows **Craving savings (this month)** and **Total craving savings (to date)**.
+This build adds an **AI Coach** tab that can help you handle cravings with coping strategies, reframes, and micro‑goals. It also keeps all v7 features (savings goal bar, movable cards, timer, charts, exports, PWA).
 
-2) **Native notifications** for timer milestones
-   - Uses the **Notification API** (prompts once for permission).
-   - Notifications at **Start**, **5:00 left**, **2:00 left**, and **Complete** (+ gentle vibration if supported).
-
-3) **Movable dashboard cards**
-   - Drag any card to **re‑order**; layout is persisted to **settings.cardOrder**.
-
-4) **Log tab is the default**
-   - App opens on **Log**.
-
-5) **Craving intensity & note** (my helpful add‑on)
-   - When starting a timer, optionally record **intensity (1–5)** and a quick **note**.
-   - These appear in **History** alongside craving events and help you learn patterns.
-
-Other highlights carried over:
-- **Custom triggers** in **Plan → Triggers**.
-- **Timer‑gated logging**, **Delay 5 min**.
-- **30‑day line chart** & **Hours × Triggers** heatmap.
-- **Streaks & Badges** (plus **Badges Gallery** with filter: All / Streaks / Timer / Savings).
-- **Export/Import** JSON (entries, settings, badges) and CSV (now includes **type** and **action** columns).
-- **PWA** ready; offline when served locally.
-
-## ▶️ Run locally
+## Run (offline features)
 - Quick: open `index.html`.
 - Recommended (PWA): `python -m http.server 5500` → open `http://localhost:5500/` → **Install app**.
 
-## Tips
-- Set **Cost per pack** & **Cigs per pack** to get accurate savings and monthly money stats.
-- Use **Badges → Savings** filter to see milestone badges as you progress.
-- You can re‑order dashboard cards to keep your most‑used ones up top.
+## Enable the AI Coach (requires internet)
+The web app talks to a **local Node server** that proxies to your AI provider so your API key remains private.
 
-## License
-MIT
+### Option A — Azure OpenAI (recommended)
+1. Create an Azure OpenAI resource and a Chat Completions deployment.
+2. In this folder:
+   ```bash
+   cp .env.example .env
+   # edit .env with your endpoint, key, and deployment
+   npm install
+   npm start
+   ```
+3. Open **http://localhost:8787/** → Use the **Coach** tab.
+
+### Option B — OpenAI
+```bash
+cp .env.example .env
+# set PROVIDER=openai, OPENAI_API_KEY, OPENAI_MODEL
+npm install
+npm start
+```
+Open **http://localhost:8787/** and chat in **Coach**.
+
+### What context is shared?
+Only if you tick **“Share plan & recent stats”** the app sends: your triggers list, baseline & quit date (if any), last 7‑day totals, the last 5 entries (type/trigger only), timer minutes, and total savings. Otherwise only your question is sent. Your data stays local unless you choose to share.
+
+## Notes
+- Service worker **does not cache** `/api/*` calls.
+- If the AI server is offline, the Coach **falls back to built‑in tips**.
