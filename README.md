@@ -1,37 +1,26 @@
-# 🚭 SmokeLess — v8 (AI Coach)
+# 🚭 SmokeLess — v9 (AI Coach, daily check‑in, relapse repair, high‑risk nudges)
 
-This build adds an **AI Coach** tab that can help you handle cravings with coping strategies, reframes, and micro‑goals. It also keeps all v7 features (savings goal bar, movable cards, timer, charts, exports, PWA).
+This build adds:
+- **Reliability fix** for non‑working buttons (see *Troubleshooting*).
+- **AI Coach** tab (via local Node proxy; offline fallback tips).
+- **Daily check‑in** (configurable time, optional context to AI, micro‑goal suggestion).
+- **Relapse repair template** (quick plan to bounce back; saved to History as a note).
+- **Coach nudges** at your *high‑risk hours* (from your 30‑day heatmap).
 
-## Run (offline features)
+## Run offline features
 - Quick: open `index.html`.
 - Recommended (PWA): `python -m http.server 5500` → open `http://localhost:5500/` → **Install app**.
 
 ## Enable the AI Coach (requires internet)
-The web app talks to a **local Node server** that proxies to your AI provider so your API key remains private.
-
-### Option A — Azure OpenAI (recommended)
-1. Create an Azure OpenAI resource and a Chat Completions deployment.
-2. In this folder:
-   ```bash
-   cp .env.example .env
-   # edit .env with your endpoint, key, and deployment
-   npm install
-   npm start
-   ```
-3. Open **http://localhost:8787/** → Use the **Coach** tab.
-
-### Option B — OpenAI
 ```bash
 cp .env.example .env
-# set PROVIDER=openai, OPENAI_API_KEY, OPENAI_MODEL
+# edit .env for Azure OpenAI (recommended) or OpenAI
 npm install
 npm start
+# open http://localhost:8787/
 ```
-Open **http://localhost:8787/** and chat in **Coach**.
 
-### What context is shared?
-Only if you tick **“Share plan & recent stats”** the app sends: your triggers list, baseline & quit date (if any), last 7‑day totals, the last 5 entries (type/trigger only), timer minutes, and total savings. Otherwise only your question is sent. Your data stays local unless you choose to share.
-
-## Notes
-- Service worker **does not cache** `/api/*` calls.
-- If the AI server is offline, the Coach **falls back to built‑in tips**.
+## Troubleshooting buttons not clicking
+- In v9 we ensure **interactive controls inside draggable cards** are non‑draggable and stop drag events. We also **delay app init until DOMContentLoaded** and added safer null checks.
+- If you installed a previous PWA build, you may have cached files. **Hard refresh** (Ctrl/Cmd + Shift + R) or remove the old app, then open v9.
+- As last resort: open DevTools → Console. If you see an error, share it and I’ll hot‑fix it.

@@ -36,6 +36,7 @@
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <main>
+    <!-- DASHBOARD -->
     <section id="dashboard" class="tab-panel" aria-labelledby="Dashboard">
       <div id="cardsContainer" class="cards">
         <div class="card card-today" draggable="true" data-card="today">
@@ -134,6 +135,7 @@
       </div>
     </section>
 
+    <!-- LOG (default) -->
     <section id="log" class="tab-panel active" aria-labelledby="Log">
       <form id="logForm" class="card form">
         <h3>Log a cigarette</h3>
@@ -175,6 +177,7 @@
       </div>
     </section>
 
+    <!-- HISTORY -->
     <section id="history" class="tab-panel" aria-labelledby="History">
       <div class="card">
         <h3>Recent entries</h3>
@@ -182,6 +185,7 @@
       </div>
     </section>
 
+    <!-- PLAN -->
     <section id="plan" class="tab-panel" aria-labelledby="Plan">
       <div class="card form">
         <h3>3‑Month Quit Plan</h3>
@@ -250,15 +254,46 @@
       </div>
     </section>
 
+    <!-- COACH (AI) -->
     <section id="coach" class="tab-panel" aria-labelledby="Coach">
       <div class="card coach-card">
         <div class="row wrap" style="justify-content:space-between; gap:8px;">
-          <div class="muted">Your AI quit‑coach can suggest coping strategies, micro‑goals, and reframes.</div>
+          <div class="muted">Your AI quit‑coach can suggest coping strategies, micro‑goals, and reframes.
+          </div>
           <label class="muted" style="display:flex;align-items:center;gap:6px;">
             <input type="checkbox" id="coachShareContext" /> Share plan & recent stats for better help
           </label>
         </div>
         <div id="coachMessages" class="coach-messages" aria-live="polite"></div>
+        <div class="coach-tools">
+          <div class="card mini">
+            <h4 style="margin:0 0 6px;">Daily check‑in</h4>
+            <div class="grid-2">
+              <label>How were cravings today (1–5)?
+                <select id="checkinCraving" data-nodrag>
+                  <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+                </select>
+              </label>
+              <label>Check‑in time
+                <input type="time" id="checkinTime" value="21:00" data-nodrag />
+              </label>
+            </div>
+            <label>Note (optional)
+              <input type="text" id="checkinNote" placeholder="e.g., toughest after lunch" data-nodrag />
+            </label>
+            <div class="row" style="justify-content:space-between;">
+              <label style="display:flex;align-items:center;gap:6px;">
+                <input type="checkbox" id="checkinEnabled" /> Enable daily check‑in
+              </label>
+              <button id="checkinSave" class="btn" data-nodrag>Save check‑in</button>
+            </div>
+          </div>
+          <div class="card mini">
+            <h4 style="margin:0 0 6px;">Relapse repair</h4>
+            <p class="muted" style="margin:0 0 8px;">Build a quick plan to bounce back fast.</p>
+            <button id="openRelapse" class="btn" data-nodrag>Open repair template</button>
+          </div>
+        </div>
         <div class="coach-input">
           <input id="coachText" type="text" placeholder="Ask for help (e.g., ‘I feel an urge after coffee’)" />
           <button id="coachSend" class="btn primary">Send</button>
@@ -273,6 +308,39 @@
       </div>
     </section>
 
+    <!-- Relapse Repair Modal -->
+    <div id="relapseModal" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-card">
+        <h3 style="margin-top:0;">Relapse Repair Plan</h3>
+        <div class="grid-2">
+          <label>Trigger / Situation
+            <input id="rrTrigger" type="text" placeholder="e.g., after argument" />
+          </label>
+          <label>When did it happen?
+            <input id="rrWhen" type="datetime-local" />
+          </label>
+        </div>
+        <label>What I’ll do right now
+          <input id="rrNow" type="text" placeholder="e.g., drink water + 5‑minute walk" />
+        </label>
+        <label>Who I’ll contact (optional)
+          <input id="rrContact" type="text" placeholder="e.g., friend or family" />
+        </label>
+        <label>Replacement behavior
+          <input id="rrReplace" type="text" placeholder="e.g., herbal tea, deep breathing" />
+        </label>
+        <label>Next 24‑hours micro‑goal
+          <input id="rrGoal" type="text" placeholder="e.g., follow plan limit, use timer for urges" />
+        </label>
+        <div class="row end" style="margin-top:8px;">
+          <button id="rrCancel" class="btn">Cancel</button>
+          <button id="rrSave" class="btn primary">Save plan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA -->
     <section id="data" class="tab-panel" aria-labelledby="Data">
       <div class="card form">
         <h3>Export / Import</h3>
